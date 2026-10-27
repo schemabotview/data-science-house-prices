@@ -1,4 +1,4 @@
-import type { Code, Edge, Group, SceneModel, SceneNode, Table, Tree, TreeEntry } from '@graphlearning/graphl-flow'
+import type { Code, Edge, Group, Plot, PlotSeries, SceneModel, SceneNode, Table, Tree, TreeEntry } from '@graphlearning/graphl-flow'
 import { FRAME_H, FRAME_W } from './ide'
 
 // The NOTEBOOK frame, Courses 2–10 — the IDE template's sibling, the SAME outer size, so cutting
@@ -35,8 +35,25 @@ export interface CellOutput {
   evalue?: string
   traceback?: string
 }
+/** One matplotlib Axes as the kernel drew it (scripts/run_notebook.py, READ_FIGURES). */
+export interface Figure {
+  title: string
+  xlabel: string
+  ylabel: string
+  xlim: number[]
+  ylim: number[]
+  /** [x, width, y, height] per bar. */
+  bars: number[][]
+  lines: { x: number[]; y: number[]; label: string }[]
+  /** Scatter collections: [x, y] points each. */
+  points: number[][][]
+  /** Line collections (vlines, hlines): segments of [x, y] points each. */
+  segments?: number[][][][]
+  xticklabels: string[]
+}
 export interface Cell {
   cell: number
+  figure?: Figure[]
   n?: number | null
   source?: string
   markdown?: string
@@ -44,6 +61,11 @@ export interface Cell {
 }
 
 export interface CellView {
+  /** Draw the cell's figure at the compact size (420×280) instead of the full one. */
+  compact?: boolean
+  /** Divide the figure's x / y values (and limits) by this — e.g. 1000 to read prices in £k. */
+  xScale?: number
+  yScale?: number
   /** Input lines (1-based) to tint. */
   highlight?: number[]
   /** A long text output keeps its first `head` and last `tail` lines around a `··· N lines` row. */
@@ -115,6 +137,32 @@ function dataframe(id: string, t: NonNullable<CellOutput['table']>, rows?: numbe
   return { type: 'table', id, columns: [t.index_name, ...t.columns], rows: body }
 }
 
+/**
+ * A figure, redrawn as a graphl-flow plot from the data matplotlib plotted: bars (categorical when
+ * each has a tick label, else at their centres), lines, scatter points, the axes' limits and labels.
+ * Nothing is re-derived: the numbers are the kernel's.
+ */
+export function figurePlot(id: string, f: Figure, opts: { compact?: boolean; xScale?: number; yScale?: number; tone?: Plot['tone'] } = {}): Plot {
+  const sx = opts.xScale ?? 1, sy = opts.yScale ?? 1
+  const r = (v: number, s: number) => Math.round((v / s) * 1000) / 1000
+  const labels = f.xticklabels.filter((t) => t)
+  const categorical = f.bars.length > 0 && labels.length === f.bars.length && labels.some((t) => /[A-Za-z]/.test(t))
+  const series: PlotSeries[] = []
+  if (f.bars.length) series.push({ kind: 'bar', label: f.ylabel || undefined, points: f.bars.map((b, i) => [categorical ? i : r(b[0] + b[1] / 2, sx), r(b[2] + b[3], sy)] as [number, number]) })
+  for (const l of f.lines) if (l.x.length > 1) series.push({ kind: 'line', label: l.label.startsWith('_') ? undefined : l.label, points: l.x.map((x, i) => [r(x, sx), r(l.y[i], sy)] as [number, number]) })
+  for (const pts of f.points) series.push({ kind: 'scatter', points: pts.map(([x, y]) => [r(x, sx), r(y, sy)] as [number, number]) })
+  for (const segs of f.segments ?? []) for (const [[x0, y0], [x1, y1]] of segs)
+    series.push({ kind: 'segment', from: [r(x0, categorical ? 1 : sx), r(y0, sy)], to: [r(x1, categorical ? 1 : sx), r(y1, sy)], dashed: false, tone: 'neutral' })
+  // Scaled axes here are prices: £k.
+  const unit = (label: string, s: number) => (s === 1000 ? (label ? `${label} (£k)` : '£k') : label) || undefined
+  return {
+    type: 'plot', id, title: f.title || undefined, compact: opts.compact, tone: opts.tone,
+    x: categorical ? { labels, label: f.xlabel || undefined } : { min: r(f.xlim[0], sx), max: r(f.xlim[1], sx), label: unit(f.xlabel, sx) },
+    y: { min: r(f.ylim[0], sy), max: r(f.ylim[1], sy), label: unit(f.ylabel, sy) },
+    series,
+  }
+}
+
 function cellNode(c: Cell, view: CellView = {}): Group {
   const id = `c${c.cell}`
   const input: Code = { type: 'code', id, lang: 'python', code: trimEnd(c.source ?? ''), highlight: view.highlight }
@@ -132,9 +180,10 @@ function cellNode(c: Cell, view: CellView = {}): Group {
     } else if (o.type === 'error') {
       flush()
       outs.push({ type: 'code', id: `${id}-err`, output: true, code: errorLines(o) })
-    } else if (o.type === 'result' && o.image) {
-      // A figure: its picture is drawn in the side pane from the numbers; here, the text repr.
-      text.push(trimEnd(o.text ?? ''))
+    } else if (o.type === 'result' && o.image && c.figure?.length) {
+      // A figure: redrawn from the data matplotlib plotted, where Jupyter shows the picture.
+      flush()
+      c.figure.forEach((f, i) => outs.push(figurePlot(`${id}-fig${i || ''}`, f, view)))
     } else text.push(trimEnd(o.text ?? ''))
   }
   flush()
