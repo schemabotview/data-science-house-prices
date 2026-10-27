@@ -44,7 +44,7 @@ export interface Figure {
   ylim: number[]
   /** [x, width, y, height] per bar. */
   bars: number[][]
-  lines: { x: number[]; y: number[]; label: string }[]
+  lines: { x: number[]; y: number[]; label: string; color?: string }[]
   /** Scatter collections: [x, y] points each. */
   points: number[][][]
   /** Line collections (vlines, hlines): segments of [x, y] points each. */
@@ -149,7 +149,9 @@ export function figurePlot(id: string, f: Figure, opts: { compact?: boolean; xSc
   const categorical = f.bars.length > 0 && labels.length === f.bars.length && labels.some((t) => /[A-Za-z]/.test(t))
   const series: PlotSeries[] = []
   if (f.bars.length) series.push({ kind: 'bar', label: f.ylabel || undefined, points: f.bars.map((b, i) => [categorical ? i : r(b[0] + b[1] / 2, sx), r(b[2] + b[3], sy)] as [number, number]) })
-  for (const l of f.lines) if (l.x.length > 1) series.push({ kind: 'line', label: l.label.startsWith('_') ? undefined : l.label, points: l.x.map((x, i) => [r(x, sx), r(l.y[i], sy)] as [number, number]) })
+  // matplotlib's red is a marker the cell drew on purpose: the warning tone. Black is construction.
+  const toneOf = (c?: string): PlotSeries['tone'] => (c === '#ff0000' ? 'consume' : c === '#000000' ? 'neutral' : undefined)
+  for (const l of f.lines) if (l.x.length > 1) series.push({ kind: 'line', tone: toneOf(l.color), label: l.label.startsWith('_') ? undefined : l.label, points: l.x.map((x, i) => [r(x, sx), r(l.y[i], sy)] as [number, number]) })
   for (const pts of f.points) series.push({ kind: 'scatter', points: pts.map(([x, y]) => [r(x, sx), r(y, sy)] as [number, number]) })
   for (const segs of f.segments ?? []) for (const [[x0, y0], [x1, y1]] of segs)
     series.push({ kind: 'segment', from: [r(x0, categorical ? 1 : sx), r(y0, sy)], to: [r(x1, categorical ? 1 : sx), r(y1, sy)], dashed: false, tone: 'neutral' })

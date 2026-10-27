@@ -35,12 +35,20 @@ KEEP_FIGURES = '%config InlineBackend.close_figures = False'
 READ_FIGURES = """
 import json as _json, numpy as _np, matplotlib.pyplot as _plt
 from matplotlib.patches import Rectangle as _Rect
+from matplotlib.colors import to_hex as _to_hex
 from matplotlib.collections import LineCollection as _Lines, PathCollection as _Paths
 def _floats(v):
     try:
         return [round(float(x), 6) for x in _np.asarray(v, dtype=float)]
     except (TypeError, ValueError):
         return []
+def _line(ax, l):
+    # Through the line's own transform into data units: axvline keeps its y in AXES fractions.
+    xy = _np.column_stack([_np.asarray(l.get_xdata(), dtype=float), _np.asarray(l.get_ydata(), dtype=float)])
+    if len(xy) and l.get_transform() != ax.transData:
+        xy = ax.transData.inverted().transform(l.get_transform().transform(xy))
+    return {"x": _floats(xy[:, 0]) if len(xy) else [], "y": _floats(xy[:, 1]) if len(xy) else [], "label": l.get_label(),
+            "color": _to_hex(l.get_color())}
 _axes = []
 for _f in map(_plt.figure, _plt.get_fignums()):
     for _a in _f.axes:
@@ -48,7 +56,7 @@ for _f in map(_plt.figure, _plt.get_fignums()):
             "title": _a.get_title(), "xlabel": _a.get_xlabel(), "ylabel": _a.get_ylabel(),
             "xlim": _floats(_a.get_xlim()), "ylim": _floats(_a.get_ylim()),
             "bars": [_floats([r.get_x(), r.get_width(), r.get_y(), r.get_height()]) for r in _a.patches if isinstance(r, _Rect)],
-            "lines": [{"x": _floats(l.get_xdata()), "y": _floats(l.get_ydata()), "label": l.get_label()} for l in _a.lines],
+            "lines": [_line(_a, l) for l in _a.lines],
             "points": [[_floats(p) for p in c.get_offsets()] for c in _a.collections if isinstance(c, _Paths) and len(c.get_offsets())],
             "segments": [[[_floats(p) for p in seg] for seg in c.get_segments()] for c in _a.collections if isinstance(c, _Lines)],
             "xticklabels": [t.get_text() for t in _a.get_xticklabels()],
