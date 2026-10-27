@@ -1,0 +1,3 @@
+$ pip install -q -e .
+$ python -c "from house_prices.clean import load_sales; print(load_sales('data/homes.csv').shape)"
+(1453, 10)

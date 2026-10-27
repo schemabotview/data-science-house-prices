@@ -1,0 +1,7 @@
+$ pip install -q --group api
+$ uvicorn house_prices.api:app --port 8765 > server.log 2>&1 & sleep 3
+$ curl -s localhost:8765/value -H 'content-type: application/json' -d '{"area": "Riverside", "sqft": 1710, "beds": 3}'
+{"price":361000,"low":329000,"high":395000}
+$ curl -s localhost:8765/value -H 'content-type: application/json' -d '{"area": "Harbourside", "sqft": 1500, "beds": 3}'
+{"detail":"no valuation: no sales in Harbourside; it knows Eastfield, Hillcrest, Northgate, Old Town, Riverside"}
+$ pkill -f "uvicorn house_prices"

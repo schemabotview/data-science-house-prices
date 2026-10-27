@@ -1,0 +1,1 @@
+{"from": "ship/02-tests", "changes": ["house_prices/features.py", "house_prices/train.py", ".gitignore"], "venv": true, "setup": ["pip install -q -e ."]}

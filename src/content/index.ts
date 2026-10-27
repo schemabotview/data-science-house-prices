@@ -7,6 +7,7 @@ import { measure } from './measure'
 import { features } from './features'
 import { model } from './model'
 import { trust } from './trust'
+import { ship } from './ship'
 import type { Course, Section } from './types'
 
 // Course registry, in syllabus order. One course per chapter of COURSE-PLAN.md; a course is
@@ -21,6 +22,7 @@ export const COURSES: Record<string, Course> = {
   [features.id]: features,
   [model.id]: model,
   [trust.id]: trust,
+  [ship.id]: ship,
 }
 
 export type { Course, Section }

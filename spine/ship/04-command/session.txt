@@ -1,0 +1,8 @@
+$ house-prices value --area Riverside --sqft 1710 --beds 3 --built 2004 --garage 2
+£383,000 (likely £350k–£417k)
+$ house-prices value --area Eastfield --sqft 1710 --beds 3 --built 2004 --garage 2
+£313,000 (likely £281k–£347k)
+$ house-prices value --area Harbourside --sqft 1500 --beds 3
+house-prices: no valuation: no sales in Harbourside; it knows Eastfield, Hillcrest, Northgate, Old Town, Riverside
+$ house-prices value --area Hillcrest --sqft 12000 --beds 9
+house-prices: no valuation: 12000 sq ft: it knows 525–3833

@@ -1,0 +1,4 @@
+$ pip install -q --group dev
+$ pytest -q
+.........                                                                [100%]
+9 passed in 0.49s

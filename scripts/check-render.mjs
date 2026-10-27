@@ -216,13 +216,13 @@ try {
         const pane = R(node('side'))
         const leaves = [...node('side').querySelectorAll(LEAVES)].map(R)
         const top = Math.min(...leaves.map((r) => r.y)), bottom = Math.max(...leaves.map((r) => r.y + r.h))
-        // A notebook side pane SPREADS its blocks over the full height, so first-top to last-bottom
-        // is always near 100%: there, fill is the blocks' own height over the pane's.
+        // Both templates SPREAD the side pane's blocks over its full height, so first-top to
+        // last-bottom is always near 100%: fill is the blocks' own height over the pane's.
         const blocks = [...node('side').querySelectorAll(':scope > .gf-body > *')].map(R)
-        const [fill, need] = ide === 'notebook'
+        const [fill, need] = ide
           ? [blocks.reduce((sum, r) => sum + r.h, 0) / pane.h, limits.spread]
           : [leaves.length ? (bottom - top) / pane.h : 0, limits.fill]
-        if (fill < need) out.push(`the side pane's content ${ide === 'notebook' ? 'covers' : 'spans'} ${Math.round(fill * 100)}% of its height (< ${Math.round(need * 100)}%) — fill the column with the diagram`)
+        if (fill < need) out.push(`the side pane's content ${ide ? 'covers' : 'spans'} ${Math.round(fill * 100)}% of its height (< ${Math.round(need * 100)}%) — fill the column with the diagram`)
       }
       return { problems: [...new Set(out)], panes }
     }, [{ body: BODY_MIN_PX, icon: ICON_MIN_PX, fill: SIDE_FILL, spread: SPREAD_FILL }, icons, section.focus, frameOf(scene)])

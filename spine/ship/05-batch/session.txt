@@ -1,0 +1,9 @@
+$ house-prices batch data/listings.csv --out valued.csv
+valued 20 houses → valued.csv
+$ cut -d, -f1-3,8-10 valued.csv | head -6
+id,area,sqft,price,low,high
+3001,Riverside,1239,303000,270000,337000
+3002,Riverside,1144,306000,273000,339000
+3003,Riverside,1227,308000,275000,341000
+3004,Eastfield,1458,277000,244000,311000
+3005,Northgate,2100,379000,347000,413000

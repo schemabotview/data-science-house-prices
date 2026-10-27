@@ -1,0 +1,7 @@
+$ python -m house_prices.train
+trained on 1162 sales, tested on 291
+test MAE £19,925
+interval -32,200 / +33,900 pounds
+$ ls models
+model.joblib
+model.json

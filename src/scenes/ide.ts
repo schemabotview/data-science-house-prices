@@ -103,7 +103,8 @@ export function ideFrame({ project = 'house-prices', tree, editor, session, side
     type: 'code', id: IDE_IDS.terminal, terminal: true, filename: `terminal — ${project}`, code: terminal(session),
     fill: true, w: EDITOR_W, minH: TERMINAL_H,
   }
-  const pane: Group = { type: 'group', id: IDE_IDS.side, bare: true, w: SIDE_W, minH: FRAME_H, children: side }
+  // `spread`, as in the notebook frame: the side pane's blocks share its full height evenly.
+  const pane: Group = { type: 'group', id: IDE_IDS.side, bare: true, spread: true, w: SIDE_W, minH: FRAME_H, children: side }
   return {
     dir: 'row',
     nodes: [explorer, { type: 'group', id: 'workbench', bare: true, children: [code, term] }, pane],

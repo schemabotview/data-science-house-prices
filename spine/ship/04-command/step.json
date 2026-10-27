@@ -1,0 +1,1 @@
+{"from": "ship/03-train", "changes": ["pyproject.toml", "house_prices/value.py", "house_prices/cli.py"], "venv": true, "setup": ["pip install -q -e .", "python -m house_prices.train"]}
