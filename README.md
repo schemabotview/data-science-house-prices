@@ -10,9 +10,22 @@ Scope, sections and side panes are in [`COURSE-PLAN.md`](COURSE-PLAN.md); author
 
 ## Status
 
-| # | Course | Sections | Status |
+All 11 courses authored 2026-10-27, rendered at 4K, checked and looked at; awaiting the owner's
+review. No audio yet. Where the build departed from the plan: COURSE-PLAN.md, "As authored".
+
+| # | Course | Sections | Notebook / frame |
 | --- | --- | --- | --- |
-| 2 | `setup` | 6 | authored, awaiting review; no audio |
+| 1 | `intro` | 2 | concept scenes |
+| 2 | `setup` | 6 | IDE, then explore.ipynb |
+| 3 | `select` | 7 | select.ipynb |
+| 4 | `clean` | 8 | clean.ipynb |
+| 5 | `shape` | 7 | shape.ipynb |
+| 6 | `see` | 6 | see.ipynb |
+| 7 | `measure` | 7 | stats.ipynb |
+| 8 | `features` | 6 | model.ipynb |
+| 9 | `model` | 8 | model.ipynb |
+| 10 | `trust` | 7 | model.ipynb |
+| 11 | `ship` | 7 | IDE: the house_prices package |
 
 ## Run it
 

@@ -1,7 +1,8 @@
 # Learn data science by predicting house prices: full course, beginner to professional — plan
 
 **Status: v1 plan, approved with two decisions (2026-10-27): FastAPI for the API; Python stays 3.15.1
-(every library had a cp315 wheel). Authoring in progress — see README.md.**
+(every library had a cp315 wheel). All 11 courses (71 sections) authored 2026-10-27, awaiting owner
+review — see "As authored" at the end for where the build departed from this plan, and why.**
 
 ## The idea
 
@@ -89,8 +90,12 @@ package is `house_prices`.
 house-prices/
   .venv/                                                         (2)
   data/homes.csv, areas.csv, listings.csv                        (2, 5, 11)
-  notebooks/
-    explore.ipynb     look, select, clean, shape, see            (2 → 6)
+  notebooks/          one per course, so each stays short:
+    explore.ipynb     the first look                             (2)
+    select.ipynb      ask the table questions                    (3)
+    clean.ipynb       every fault fixed; writes homes_clean.csv  (4)
+    shape.ipynb       group, join, reshape                       (5)
+    see.ipynb         charts                                     (6)
     stats.ipynb       how sure are we                            (7)
     model.ipynb       features, models, validation               (8 → 10)
   house_prices/
@@ -295,3 +300,27 @@ printed or saved. Timings stay `volatile`, as in the expense tracker.
 
 6. Python 3.15.1 (a 3.14 fallback was approved if a wheel was missing; none was).
 7. Course 11's API is FastAPI (what a data team would use), pinned with uvicorn.
+
+## As authored (2026-10-27)
+
+Where the authored course departs from the tables above. Each departure came from a real output.
+
+- **One notebook per course** (tree above), not one explore.ipynb for Courses 2–6: cell counts stay
+  short enough to read, and Course 4 hands the next courses a file (`homes_clean.csv`), as real work does.
+- **2.1 is an IDE frame** (terminal + pyproject.toml); the notebook frame starts at 2.3.
+- **3.4**: "price per sq ft" is attempted and fails for real (price is still text); it works in 5.2.
+- **4.2**: `built` stays missing (no invented years); the median is imputed inside the model pipeline (8.6).
+- **4.7, 5.5, 7.3, 8.3, 9.3** are full scenes built from the notebook cells' real output (no separate labs).
+- **6.4**: medians with the middle half drawn by `vlines`, not a box plot.
+- **7.5**: the permutation test is written by hand with NumPy (`shuffled_differences`); SciPy checks the
+  bootstrap in 7.4.
+- **9.5: the log target LOST** (6.2% vs 7.0% typical miss) and is dropped. Prices here are built additively.
+- **9.7: the plain linear model beats gradient boosting** (£19,925 vs £21,292), and still does after tuning
+  (10.2). The linear model is the one shipped.
+- **10.5: quantile boosting's 10–90% band held only 67% of test prices**; the shipped interval is the linear
+  model ± its cross-validated errors (held 84.2%).
+- **Course 11** has `value.py` (the one function behind the command, the batch and the API) and the
+  training script reproduces the notebook's test MAE exactly. The interval offsets and the training
+  ranges live in `models/model.json`; `value()` refuses unknown areas and sizes outside the data.
+- **The finished valuation** (Course 1's payoff) is the real one: a 1,710 sq ft Riverside house, built
+  2004, two garages: £383,000 (likely £350k–£417k).

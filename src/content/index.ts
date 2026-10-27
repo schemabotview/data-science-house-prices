@@ -1,3 +1,4 @@
+import { intro } from './intro'
 import { setup } from './setup'
 import { select } from './select'
 import { clean } from './clean'
@@ -13,6 +14,7 @@ import type { Course, Section } from './types'
 // Course registry, in syllabus order. One course per chapter of COURSE-PLAN.md; a course is
 // registered here only once it is authored.
 export const COURSES: Record<string, Course> = {
+  [intro.id]: intro,
   [setup.id]: setup,
   [select.id]: select,
   [clean.id]: clean,

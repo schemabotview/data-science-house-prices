@@ -1,4 +1,14 @@
 {
   "_comment": "Curated publish titles (YouTube title + thumbnail header) per course, keyed by course id. Search-first: what someone would actually type, never 'Course 2'. One entry per course in src/content/index.ts.",
-  "setup": "Pandas and Jupyter for beginners: your first DataFrame"
+  "setup": "Pandas and Jupyter for beginners: your first DataFrame",
+  "intro": "Learn data science by predicting house prices: what we'll build",
+  "select": "Pandas loc vs iloc, boolean masks and dates, explained",
+  "clean": "Data cleaning in pandas: missing values, wrong types, duplicates, outliers",
+  "shape": "Pandas groupby, pivot tables and merge: joins explained",
+  "see": "Data visualization in Python: histograms, scatter plots and honest charts",
+  "measure": "Statistics for data science: bootstrap, confidence intervals, p-values",
+  "features": "Feature engineering and data leakage with scikit-learn pipelines",
+  "model": "Linear regression, decision trees and gradient boosting: predicting house prices",
+  "trust": "Cross-validation, prediction intervals and model explanation in scikit-learn",
+  "ship": "From Jupyter notebook to Python package, CLI and FastAPI"
 }

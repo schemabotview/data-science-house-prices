@@ -56,6 +56,12 @@ is its cells. `"sequence"` runs cells in a learner's order, `[n, "source"]` an o
 `~/.cache/house-prices-spine/`. Random things (splits, bootstrap, models) are SEEDED, so they replay;
 timings are `volatile`: a scene reads them from the cells, narration says "hundreds of times", never a
 number.
+`scripts/step.py` makes the next notebook step (copy the parent, append cells, write step.json);
+`"produces"` keeps a file a notebook writes (homes_clean.csv) in the project, checked against the run.
+**Figures**: after a cell draws, `run_notebook.py` reads the figure's DATA back from matplotlib (bars,
+lines through their own transforms, scatter points, line collections, limits, colours) with hidden
+kernel calls that move no counts; `figurePlot` (notebook.ts) redraws it as a graphl-flow plot.
+Course 11's steps are terminal sessions (pip, pytest, the command, uvicorn + curl, stopped by pkill).
 
 ## Frames
 
@@ -64,8 +70,11 @@ number.
   `··· N cells above`), `view` tints lines and clips long text / DataFrame rows. A DataFrame output
   is a `table` parsed from pandas' own HTML.
 - **IDE frame** (`src/scenes/ide.ts`, the expense tracker's): 2.1 and Course 11.
+- Both side panes `spread` their blocks over the full height; check-render's fill rule is the blocks'
+  own height ≥ 50% of the pane (add real content, never padding).
 - Both are 1736 wide at 16:9: check-render asserts every framed section is on ONE fit, and each pane
-  at the same pixels as the first frame of its kind, and that no pane's content runs past it.
+  at the same pixels as the first frame of its kind, and that no pane's content runs past it, and
+  that no plot text overlaps other plot text (six category labels once ran into one word).
 - **Concept scenes** (◆ full scene) carry real lab output (`src/scenes/lab.ts` `outputOf`).
 - Every side pane is a DIAGRAM (edge, table or plot — check-content). No edges between panes.
 - Values in a scene are READ from the spine (`textOf`, `outputOf`, regex over a session), never typed.
