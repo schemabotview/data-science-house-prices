@@ -1,6 +1,7 @@
 # Learn data science by predicting house prices: full course, beginner to professional — plan
 
-**Status: v1 plan, awaiting owner review (2026-10-27).** Nothing is authored yet.
+**Status: v1 plan, approved with two decisions (2026-10-27): FastAPI for the API; Python stays 3.15.1
+(every library had a cp315 wheel). Authoring in progress — see README.md.**
 
 ## The idea
 
@@ -42,9 +43,9 @@ on it says so in one line (e.g. "a comprehension, as in the expense tracker").
 
 ## Stack
 
-- **Python 3.15.1**, same pin as python-expense-tracker and python-ct. **Risk:** pandas, scikit-learn
-  and SciPy must ship 3.15 wheels on the day we pin. If any do not, the pin falls back to 3.14 for
-  this repo only (decision 6).
+- **Python 3.15.1**, same pin as python-expense-tracker and python-ct. Checked 2026-10-27: pandas
+  3.1.0, NumPy 2.5.4, SciPy 1.18.1, scikit-learn 1.9.1 and matplotlib 3.11.2 all ship cp315 wheels,
+  so no fallback (decision 6).
 - **pandas 3** (Copy-on-Write is the default, taught in 3.7), **NumPy**, **SciPy** (`stats`),
   **scikit-learn**, **JupyterLab**, and **matplotlib** for the learner's own plots. Every version is
   pinned in `pyproject.toml` at authoring time, and every output is replayed, never typed.
@@ -97,7 +98,7 @@ house-prices/
     features.py       the ColumnTransformer                      (11)
     train.py          fit, evaluate, save the model              (11)
     cli.py            `house-prices value …`, `house-prices batch …` (11)
-    api.py            POST /value → estimate + interval          (11)
+    api.py            FastAPI: POST /value → estimate + interval (11)
   models/model.joblib                                            (11)
   tests/                                                         (11)
   pyproject.toml                                                 (2 → 11)
@@ -255,7 +256,7 @@ Side pane = the diagram. ◆ marks a detour (side pane, or full scene).
 | 3 | Train and save | `train.py`; `joblib` | pipeline → `model.joblib` |
 | 4 | A command | `house-prices value --area Riverside --sqft 1710 …` | argv → model → estimate + interval |
 | 5 | Batch | `house-prices batch data/listings.csv` | CSV in → valued CSV out |
-| 6 | A web API | `POST /value` | request → model → JSON |
+| 6 | A web API | FastAPI: `POST /value` | request → validated body → model → JSON |
 | 7 | Where next | the machine-learning, MLOps and Spark series | each part of the app → its tool at scale |
 
 ## How a section teaches
@@ -292,8 +293,5 @@ printed or saved. Timings stay `volatile`, as in the expense tracker.
 4. Notebook frame for Courses 2–10, IDE frame for Course 11.
 5. One video, one continuous story; Python basics are a prerequisite (the expense-tracker video).
 
-## Open questions for the owner
-
-6. If a library has no 3.15 wheel on the pinning day: pin 3.14 here, or wait?
-7. Course 11's API: stdlib `http.server` (as in the expense tracker, no new dependency) or FastAPI
-   (what a data team would use)? The plan assumes stdlib.
+6. Python 3.15.1 (a 3.14 fallback was approved if a wheel was missing; none was).
+7. Course 11's API is FastAPI (what a data team would use), pinned with uvicorn.

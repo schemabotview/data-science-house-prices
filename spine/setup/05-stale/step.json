@@ -1,0 +1,2 @@
+{ "from": "setup/04-dataframe", "changes": ["notebooks/explore.ipynb"], "notebook": "notebooks/explore.ipynb",
+  "sequence": [1, 2, 3, 4, [5, "big = homes[homes[\"sqft\"] > 2000]"], 6, 6] }

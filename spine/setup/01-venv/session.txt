@@ -1,0 +1,12 @@
+$ ls
+data
+pyproject.toml
+$ ls data
+homes.csv
+$ python3.15 -m venv .venv
+$ source .venv/bin/activate
+$ pip install -q --group notebook
+$ python -c "import pandas, numpy; print(pandas.__version__, numpy.__version__)"
+3.1.0 2.5.4
+$ jupyter lab --version
+4.6.4

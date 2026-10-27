@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-snapshot
+out
+.tmp
+segments
+images
+*.local
+.claude
+.DS_Store
+package-lock.json

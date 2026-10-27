@@ -1,0 +1,21 @@
+id,area,sqft,beds,built,garage,condition
+3001,Riverside,1239,3,1977,,4
+3002,Riverside,1144,3,1987,2,3
+3003,Riverside,1227,2,2004,1,3
+3004,Eastfield,1458,5,1965,2,3
+3005,Northgate,2100,5,1971,2,1
+3006,Hillcrest,672,1,1994,2,3
+3007,Riverside,1128,2,2014,1,5
+3008,Eastfield,1277,3,1975,3,2
+3009,Riverside,1118,3,2025,,5
+3010,Eastfield,874,1,1971,2,4
+3011,Hillcrest,866,3,1978,,4
+3012,Old Town,1534,4,1954,,5
+3013,Riverside,1475,4,2023,,4
+3014,Eastfield,1657,4,1958,,3
+3015,Eastfield,1050,2,1948,2,4
+3016,Hillcrest,1771,4,2006,1,3
+3017,Hillcrest,1882,4,1956,1,1
+3018,Hillcrest,1590,3,1941,1,2
+3019,Northgate,1805,5,1999,1,3
+3020,Eastfield,1607,3,2000,1,3

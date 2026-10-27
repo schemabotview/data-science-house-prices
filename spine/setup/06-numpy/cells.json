@@ -1,0 +1,181 @@
+[
+ {
+  "cell": 1,
+  "n": 1,
+  "source": "import pandas as pd\n\nhomes = pd.read_csv(\"../data/homes.csv\")\nhomes.shape",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(1460, 10)"
+   }
+  ]
+ },
+ {
+  "cell": 2,
+  "n": 2,
+  "source": "homes.head()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "     id        sold    agent       area  sqft  beds   built  garage  \\\n0  1001  2021-01-07     Hart  Hillcrest  1297     3  1961.0     NaN   \n1  1002  08/01/2021    Bloom   Old Town  3068     6  1937.0     2.0   \n2  1003  2021-01-09     Hart  Riverside  1003     3  1998.0     1.0   \n3  1004  2021-01-11  Keyline   Old Town   973     2  1948.0     NaN   \n4  1005  2021-01-13  Keyline  Hillcrest  1512     3  1969.0     1.0   \n\n   condition   price  \n0          3  195800  \n1          5  373000  \n2          3  235300  \n3          3  174900  \n4          3  223900  ",
+    "table": {
+     "columns": [
+      "id",
+      "sold",
+      "agent",
+      "area",
+      "sqft",
+      "beds",
+      "built",
+      "garage",
+      "condition",
+      "price"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "0",
+       "1001",
+       "2021-01-07",
+       "Hart",
+       "Hillcrest",
+       "1297",
+       "3",
+       "1961.0",
+       "NaN",
+       "3",
+       "195800"
+      ],
+      [
+       "1",
+       "1002",
+       "08/01/2021",
+       "Bloom",
+       "Old Town",
+       "3068",
+       "6",
+       "1937.0",
+       "2.0",
+       "5",
+       "373000"
+      ],
+      [
+       "2",
+       "1003",
+       "2021-01-09",
+       "Hart",
+       "Riverside",
+       "1003",
+       "3",
+       "1998.0",
+       "1.0",
+       "3",
+       "235300"
+      ],
+      [
+       "3",
+       "1004",
+       "2021-01-11",
+       "Keyline",
+       "Old Town",
+       "973",
+       "2",
+       "1948.0",
+       "NaN",
+       "3",
+       "174900"
+      ],
+      [
+       "4",
+       "1005",
+       "2021-01-13",
+       "Keyline",
+       "Hillcrest",
+       "1512",
+       "3",
+       "1969.0",
+       "1.0",
+       "3",
+       "223900"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 3,
+  "n": 3,
+  "source": "homes.info()",
+  "outputs": [
+   {
+    "type": "stream",
+    "name": "stdout",
+    "text": "<class 'pandas.DataFrame'>\nRangeIndex: 1460 entries, 0 to 1459\nData columns (total 10 columns):\n #   Column     Non-Null Count  Dtype  \n---  ------     --------------  -----  \n 0   id         1460 non-null   int64  \n 1   sold       1460 non-null   str    \n 2   agent      1460 non-null   str    \n 3   area       1460 non-null   str    \n 4   sqft       1460 non-null   int64  \n 5   beds       1460 non-null   int64  \n 6   built      1447 non-null   float64\n 7   garage     1011 non-null   float64\n 8   condition  1460 non-null   int64  \n 9   price      1460 non-null   str    \ndtypes: float64(2), int64(4), str(4)\nmemory usage: 114.2 KB\n"
+   }
+  ]
+ },
+ {
+  "cell": 4,
+  "n": 4,
+  "source": "prices = homes[\"price\"]\ntype(prices), prices.dtype",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(pandas.Series, <StringDtype(storage='python', na_value=nan)>)"
+   }
+  ]
+ },
+ {
+  "cell": 5,
+  "n": 5,
+  "source": "big = homes[homes[\"sqft\"] > 2500]",
+  "outputs": []
+ },
+ {
+  "cell": 6,
+  "n": 6,
+  "source": "len(big)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "38"
+   }
+  ]
+ },
+ {
+  "cell": 7,
+  "n": 7,
+  "source": "sizes = homes[\"sqft\"].to_numpy()\ntype(sizes), sizes.dtype, sizes.nbytes",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(numpy.ndarray, dtype('int64'), 11680)"
+   }
+  ]
+ },
+ {
+  "cell": 8,
+  "n": 8,
+  "source": "%timeit [s / 10.764 for s in sizes]",
+  "outputs": [
+   {
+    "type": "stream",
+    "name": "stdout",
+    "text": "2.66 ms ± 490 μs per loop (mean ± std. dev. of 7 runs, 100 loops each)\n"
+   }
+  ]
+ },
+ {
+  "cell": 9,
+  "n": 9,
+  "source": "%timeit sizes / 10.764",
+  "outputs": [
+   {
+    "type": "stream",
+    "name": "stdout",
+    "text": "4.23 μs ± 398 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)\n"
+   }
+  ]
+ }
+]

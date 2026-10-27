@@ -1,0 +1,106 @@
+[
+ {
+  "cell": 1,
+  "n": 1,
+  "source": "import pandas as pd\n\nhomes = pd.read_csv(\"../data/homes.csv\")\nhomes.shape",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(1460, 10)"
+   }
+  ]
+ },
+ {
+  "cell": 2,
+  "n": 2,
+  "source": "homes.head()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "     id        sold    agent       area  sqft  beds   built  garage  \\\n0  1001  2021-01-07     Hart  Hillcrest  1297     3  1961.0     NaN   \n1  1002  08/01/2021    Bloom   Old Town  3068     6  1937.0     2.0   \n2  1003  2021-01-09     Hart  Riverside  1003     3  1998.0     1.0   \n3  1004  2021-01-11  Keyline   Old Town   973     2  1948.0     NaN   \n4  1005  2021-01-13  Keyline  Hillcrest  1512     3  1969.0     1.0   \n\n   condition   price  \n0          3  195800  \n1          5  373000  \n2          3  235300  \n3          3  174900  \n4          3  223900  ",
+    "table": {
+     "columns": [
+      "id",
+      "sold",
+      "agent",
+      "area",
+      "sqft",
+      "beds",
+      "built",
+      "garage",
+      "condition",
+      "price"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "0",
+       "1001",
+       "2021-01-07",
+       "Hart",
+       "Hillcrest",
+       "1297",
+       "3",
+       "1961.0",
+       "NaN",
+       "3",
+       "195800"
+      ],
+      [
+       "1",
+       "1002",
+       "08/01/2021",
+       "Bloom",
+       "Old Town",
+       "3068",
+       "6",
+       "1937.0",
+       "2.0",
+       "5",
+       "373000"
+      ],
+      [
+       "2",
+       "1003",
+       "2021-01-09",
+       "Hart",
+       "Riverside",
+       "1003",
+       "3",
+       "1998.0",
+       "1.0",
+       "3",
+       "235300"
+      ],
+      [
+       "3",
+       "1004",
+       "2021-01-11",
+       "Keyline",
+       "Old Town",
+       "973",
+       "2",
+       "1948.0",
+       "NaN",
+       "3",
+       "174900"
+      ],
+      [
+       "4",
+       "1005",
+       "2021-01-13",
+       "Keyline",
+       "Hillcrest",
+       "1512",
+       "3",
+       "1969.0",
+       "1.0",
+       "3",
+       "223900"
+      ]
+     ]
+    }
+   }
+  ]
+ }
+]

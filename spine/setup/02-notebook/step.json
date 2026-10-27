@@ -1,0 +1,1 @@
+{ "lab": true, "venv": true, "setup": ["pip install -q --group notebook"], "volatile": true }

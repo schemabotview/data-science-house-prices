@@ -1,0 +1,39 @@
+$ jupyter nbconvert --to notebook --execute --inplace notebooks/explore.ipynb
+[NbConvertApp] Converting notebook notebooks/explore.ipynb to notebook
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[NbConvertApp] Writing 1127 bytes to notebooks/explore.ipynb
+$ python -c "import json; print(json.dumps(json.load(open('notebooks/explore.ipynb'))['cells'][0], indent=1))"
+{
+ "cell_type": "code",
+ "execution_count": 1,
+ "id": "c1",
+ "metadata": {
+  "execution": {
+   "iopub.execute_input": "2026-10-27T10:02:29.923007Z",
+   "iopub.status.busy": "2026-10-27T10:02:29.922660Z",
+   "iopub.status.idle": "2026-10-27T10:02:30.472327Z",
+   "shell.execute_reply": "2026-10-27T10:02:30.470912Z"
+  }
+ },
+ "outputs": [
+  {
+   "data": {
+    "text/plain": [
+     "(1460, 10)"
+    ]
+   },
+   "execution_count": 1,
+   "metadata": {},
+   "output_type": "execute_result"
+  }
+ ],
+ "source": [
+  "import pandas as pd\n",
+  "\n",
+  "homes = pd.read_csv(\"../data/homes.csv\")\n",
+  "homes.shape"
+ ]
+}
+$ jupyter kernelspec list
+Available kernels:
+  python3    /home/ana/house-prices/.venv/share/jupyter/kernels/python3

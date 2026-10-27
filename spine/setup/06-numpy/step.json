@@ -1,0 +1,1 @@
+{ "from": "setup/05-stale", "changes": ["notebooks/explore.ipynb"], "notebook": "notebooks/explore.ipynb", "volatile": true }
