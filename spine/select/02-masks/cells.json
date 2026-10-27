@@ -1,0 +1,102 @@
+[
+ {
+  "cell": 1,
+  "n": 1,
+  "source": "import pandas as pd\n\nhomes = pd.read_csv(\"../data/homes.csv\")",
+  "outputs": []
+ },
+ {
+  "cell": 2,
+  "n": 2,
+  "source": "homes[[\"area\", \"sqft\", \"beds\"]].head(3)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "        area  sqft  beds\n0  Hillcrest  1297     3\n1   Old Town  3068     6\n2  Riverside  1003     3",
+    "table": {
+     "columns": [
+      "area",
+      "sqft",
+      "beds"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "0",
+       "Hillcrest",
+       "1297",
+       "3"
+      ],
+      [
+       "1",
+       "Old Town",
+       "3068",
+       "6"
+      ],
+      [
+       "2",
+       "Riverside",
+       "1003",
+       "3"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 3,
+  "n": 3,
+  "source": "homes.loc[2, \"area\"]",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "'Riverside'"
+   }
+  ]
+ },
+ {
+  "cell": 4,
+  "n": 4,
+  "source": "homes.iloc[2, 3]",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "'Riverside'"
+   }
+  ]
+ },
+ {
+  "cell": 5,
+  "n": 5,
+  "source": "riverside = homes[\"area\"] == \"Riverside\"\nriverside.head(3)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "0    False\n1    False\n2     True\nName: area, dtype: bool"
+   }
+  ]
+ },
+ {
+  "cell": 6,
+  "n": 6,
+  "source": "riverside.sum()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "np.int64(246)"
+   }
+  ]
+ },
+ {
+  "cell": 7,
+  "n": 7,
+  "source": "homes[riverside & (homes[\"sqft\"] > 2000)].shape",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(26, 10)"
+   }
+  ]
+ }
+]

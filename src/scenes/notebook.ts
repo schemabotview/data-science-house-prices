@@ -71,9 +71,23 @@ export const NB_IDS = { explorer: 'explorer', notebook: 'notebook', side: 'side'
 
 const trimEnd = (t: string) => t.replace(/\n+$/, '')
 
+/** A line longer than the notebook is wide WRAPS, as Jupyter's output area wraps it. */
+export const wrap = (text: string, prefix = '') => text.split('\n').flatMap((line) => {
+  const rows: string[] = []
+  let rest = line
+  while (rest.length > NB_COLS) {
+    // Break at the last space that fits, as a browser would; a run with no space breaks hard.
+    const at = rest.lastIndexOf(' ', NB_COLS)
+    const cut = at > NB_COLS / 2 ? at : NB_COLS
+    rows.push(rest.slice(0, cut))
+    rest = rest.slice(cut).replace(/^ /, '')
+  }
+  return [...rows, rest].map((r) => prefix + r)
+}).join('\n')
+
 /** Keep `head` lines and `tail` lines of a text; the run between becomes one fold row. */
 export function clip(text: string, head?: number, tail = 0): string {
-  const lines = trimEnd(text).split('\n')
+  const lines = wrap(trimEnd(text)).split('\n')
   if (head === undefined || lines.length <= head + tail + 1) return lines.join('\n')
   return [...lines.slice(0, head), `··· ${lines.length - head - tail} lines`, ...lines.slice(lines.length - tail)].join('\n')
 }
@@ -91,7 +105,7 @@ export function errorLines(o: CellOutput): string {
   const last = lines.findLastIndex((l) => l.startsWith(`${o.ename}:`) || l.startsWith(`${o.ename} `))
   const tailLine = last >= 0 ? lines[last] : `${o.ename}: ${o.evalue}`
   const hidden = Math.max(0, (last >= 0 ? last : lines.length) - (arrow > 0 ? arrow : start) - 1)
-  return [...keep, ...(hidden ? [`··· ${hidden} lines in the libraries`] : []), tailLine].map((l) => `! ${l}`).join('\n')
+  return wrap([...keep, ...(hidden ? [`··· ${hidden} lines in the libraries`] : []), tailLine].join('\n'), '! ')
 }
 
 function dataframe(id: string, t: NonNullable<CellOutput['table']>, rows?: number): Table {
@@ -153,3 +167,19 @@ export function outputOf(cells: Cell[], cell: number, type: CellOutput['type'] =
 
 /** A cell's output text, trimmed. */
 export const textOf = (cells: Cell[], cell: number, type: CellOutput['type'] = 'result') => trimEnd(outputOf(cells, cell, type).text ?? '')
+
+/**
+ * A printed Series (value_counts, a groupby result) as [label, value] pairs: one row per line that
+ * holds a label and a value separated by 2+ spaces; the index-name header, `Name:` and `dtype:` lines
+ * are skipped. The text is the kernel's; this only splits it.
+ */
+export function seriesOf(text: string): [string, string][] {
+  return trimEnd(text).split('\n')
+    .filter((l) => !/^(Name|dtype|Freq):/.test(l))
+    .map((l) => /^(.*?\S)\s{2,}(\S.*)$/.exec(l))
+    .filter((m): m is RegExpExecArray => m !== null)
+    .map((m) => [m[1].trim(), m[2].trim()])
+}
+
+/** A number from the kernel's text: `np.int64(246)` → 246, `84513` → 84513. */
+export const num = (text: string) => Number(/-?[\d.]+(?:e[-+]?\d+)?/.exec(text.replace(/np\.\w+\(/, ''))![0])

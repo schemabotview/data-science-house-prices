@@ -1,0 +1,69 @@
+[
+ {
+  "cell": 1,
+  "n": 1,
+  "source": "import pandas as pd\n\nhomes = pd.read_csv(\"../data/homes.csv\")",
+  "outputs": []
+ },
+ {
+  "cell": 2,
+  "n": 2,
+  "source": "homes[[\"area\", \"sqft\", \"beds\"]].head(3)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "        area  sqft  beds\n0  Hillcrest  1297     3\n1   Old Town  3068     6\n2  Riverside  1003     3",
+    "table": {
+     "columns": [
+      "area",
+      "sqft",
+      "beds"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "0",
+       "Hillcrest",
+       "1297",
+       "3"
+      ],
+      [
+       "1",
+       "Old Town",
+       "3068",
+       "6"
+      ],
+      [
+       "2",
+       "Riverside",
+       "1003",
+       "3"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 3,
+  "n": 3,
+  "source": "homes.loc[2, \"area\"]",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "'Riverside'"
+   }
+  ]
+ },
+ {
+  "cell": 4,
+  "n": 4,
+  "source": "homes.iloc[2, 3]",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "'Riverside'"
+   }
+  ]
+ }
+]

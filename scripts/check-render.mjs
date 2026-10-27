@@ -31,6 +31,8 @@ const PORT = 5189
 const BODY_MIN_PX = +(process.env.BODY_MIN_PX ?? 24)
 const ICON_MIN_PX = +(process.env.ICON_MIN_PX ?? 32)
 const SIDE_FILL = +(process.env.SIDE_FILL ?? 2 / 3)
+// A spread (notebook) side pane's blocks must cover this share of its height.
+const SPREAD_FILL = +(process.env.SPREAD_FILL ?? 0.5)
 
 const { COURSES, SCENES } = await loadRegistry()
 const sections = Object.values(COURSES).flatMap((c) => c.sections.map((s) => ({ slug: `${c.id}-${s.id}`, section: s, scene: SCENES[s.scene] })))
@@ -207,11 +209,16 @@ try {
         const pane = R(node('side'))
         const leaves = [...node('side').querySelectorAll(LEAVES)].map(R)
         const top = Math.min(...leaves.map((r) => r.y)), bottom = Math.max(...leaves.map((r) => r.y + r.h))
-        const fill = leaves.length ? (bottom - top) / pane.h : 0
-        if (fill < limits.fill) out.push(`the side pane's content spans ${Math.round(fill * 100)}% of its height (< ${Math.round(limits.fill * 100)}%) — fill the column with the diagram`)
+        // A notebook side pane SPREADS its blocks over the full height, so first-top to last-bottom
+        // is always near 100%: there, fill is the blocks' own height over the pane's.
+        const blocks = [...node('side').querySelectorAll(':scope > .gf-body > *')].map(R)
+        const [fill, need] = ide === 'notebook'
+          ? [blocks.reduce((sum, r) => sum + r.h, 0) / pane.h, limits.spread]
+          : [leaves.length ? (bottom - top) / pane.h : 0, limits.fill]
+        if (fill < need) out.push(`the side pane's content ${ide === 'notebook' ? 'covers' : 'spans'} ${Math.round(fill * 100)}% of its height (< ${Math.round(need * 100)}%) — fill the column with the diagram`)
       }
       return { problems: [...new Set(out)], panes }
-    }, [{ body: BODY_MIN_PX, icon: ICON_MIN_PX, fill: SIDE_FILL }, icons, section.focus, frameOf(scene)])
+    }, [{ body: BODY_MIN_PX, icon: ICON_MIN_PX, fill: SIDE_FILL, spread: SPREAD_FILL }, icons, section.focus, frameOf(scene)])
     for (const f of found.problems) problems.push(`${slug}  ${f}`)
     const after = await page.$eval('.gf-content', (c) => c.style.transform)
     if (before !== after) problems.push(`${slug}  the fit moved after data-fit="ready"`)

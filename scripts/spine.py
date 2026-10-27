@@ -229,6 +229,9 @@ def replay(step: Path) -> tuple[str | None, dict[str, str], list | None]:
         transcript = '\n'.join(blocks)
         cells = run_notebook(project, config, env) if config.get('notebook') else None
         captured = {name: (project / name).read_text() for name in config.get('capture', [])}
+        # Files the notebook WRITES (a cleaned dataset) belong to the project from this step on:
+        # returned under 'project/' so --write keeps them and a check compares them.
+        captured.update({f'project/{name}': (project / name).read_text() for name in config.get('produces', [])})
     real = str(home)
     fix = lambda s: s.replace(real, SHOWN_HOME).replace(str(Path(tmp).resolve() / 'home'), SHOWN_HOME)
     if cells is not None:
@@ -281,10 +284,12 @@ def lineage(step: Path) -> list[str]:
     if config_of(parent).get('lab'):
         return [f'{name}: "from" names a lab, which is outside the chain']
     changes = config.get('changes') or []
+    # A file the notebook writes (`produces`) is the run's to check, not the diff's.
+    produced = config.get('produces', [])
     if not changes:
         return [f'{name}: "from" without "changes" — a step that changes nothing is not a section']
     under = lambda path, c: path == c or path.startswith(c.rstrip('/') + '/')
-    covered = lambda path: any(under(path, c) for c in changes)
+    covered = lambda path: any(under(path, c) for c in changes + produced)
     before, after = files(parent), files(step)
     differs = {path for path in before.keys() | after.keys() if before.get(path) != after.get(path)}
     out = [f'{name}: {path} differs from {config["from"]} but is not in "changes"' for path in sorted(differs) if not covered(path)]
@@ -321,6 +326,8 @@ def main() -> int:
     data = Path(__file__).resolve().parent.parent / 'data'
     for s in every:
         for f in sorted((s / 'project' / 'data').glob('*.csv')):
+            if not (data / f.name).exists():
+                continue  # written by a notebook (`produces`): checked against its run instead
             if f.read_bytes() != (data / f.name).read_bytes():
                 problems += 1
                 print(f'✗ {s.relative_to(ROOT)}: data/{f.name} differs from the generated data/')
@@ -336,7 +343,7 @@ def main() -> int:
             if cells is not None:
                 (step / 'cells.json').write_text(cells_text(cells))
             for file, text in captured.items():
-                target = step / 'captured' / file
+                target = step / file if file.startswith('project/') else step / 'captured' / file
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text(text)
             print(f'wrote {name}')
@@ -351,9 +358,10 @@ def main() -> int:
                 print(f'✗ {name}: {file} differs from a real run')
                 sys.stdout.writelines(difflib.unified_diff(expected.splitlines(True), real.splitlines(True), file, 'real run'))
         for file, text in captured.items():
-            if (step / 'captured' / file).read_text() != text:
+            saved = step / file if file.startswith('project/') else step / 'captured' / file
+            if not saved.exists() or saved.read_text() != text:
                 problems += 1
-                print(f'✗ {name}: captured/{file} differs from a real run')
+                print(f'✗ {name}: {saved.relative_to(step)} differs from a real run')
     if not write:
         print(f"{'✗' if problems else '✓'} {len(steps)} spine step(s) replayed, {problems} problem(s)")
     return 1 if problems else 0

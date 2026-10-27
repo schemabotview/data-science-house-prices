@@ -1,0 +1,245 @@
+[
+ {
+  "cell": 1,
+  "n": 1,
+  "source": "import pandas as pd\n\nhomes = pd.read_csv(\"../data/homes.csv\")",
+  "outputs": []
+ },
+ {
+  "cell": 2,
+  "n": 2,
+  "source": "homes[[\"area\", \"sqft\", \"beds\"]].head(3)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "        area  sqft  beds\n0  Hillcrest  1297     3\n1   Old Town  3068     6\n2  Riverside  1003     3",
+    "table": {
+     "columns": [
+      "area",
+      "sqft",
+      "beds"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "0",
+       "Hillcrest",
+       "1297",
+       "3"
+      ],
+      [
+       "1",
+       "Old Town",
+       "3068",
+       "6"
+      ],
+      [
+       "2",
+       "Riverside",
+       "1003",
+       "3"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 3,
+  "n": 3,
+  "source": "homes.loc[2, \"area\"]",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "'Riverside'"
+   }
+  ]
+ },
+ {
+  "cell": 4,
+  "n": 4,
+  "source": "homes.iloc[2, 3]",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "'Riverside'"
+   }
+  ]
+ },
+ {
+  "cell": 5,
+  "n": 5,
+  "source": "riverside = homes[\"area\"] == \"Riverside\"\nriverside.head(3)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "0    False\n1    False\n2     True\nName: area, dtype: bool"
+   }
+  ]
+ },
+ {
+  "cell": 6,
+  "n": 6,
+  "source": "riverside.sum()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "np.int64(246)"
+   }
+  ]
+ },
+ {
+  "cell": 7,
+  "n": 7,
+  "source": "homes[riverside & (homes[\"sqft\"] > 2000)].shape",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(26, 10)"
+   }
+  ]
+ },
+ {
+  "cell": 8,
+  "n": 8,
+  "source": "top = homes.nlargest(5, \"sqft\")[[\"area\", \"sqft\", \"beds\"]]\ntop",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "           area  sqft  beds\n1188  Riverside  3833     6\n650   Northgate  3660     6\n691   Northgate  3368     6\n175   Northgate  3333     6\n1      Old Town  3068     6",
+    "table": {
+     "columns": [
+      "area",
+      "sqft",
+      "beds"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "1188",
+       "Riverside",
+       "3833",
+       "6"
+      ],
+      [
+       "650",
+       "Northgate",
+       "3660",
+       "6"
+      ],
+      [
+       "691",
+       "Northgate",
+       "3368",
+       "6"
+      ],
+      [
+       "175",
+       "Northgate",
+       "3333",
+       "6"
+      ],
+      [
+       "1",
+       "Old Town",
+       "3068",
+       "6"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 9,
+  "n": 9,
+  "source": "top.loc[1, \"area\"], top.iloc[1][\"area\"]",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "('Old Town', 'Northgate')"
+   }
+  ]
+ },
+ {
+  "cell": 10,
+  "n": 10,
+  "source": "homes[\"age\"] = 2026 - homes[\"built\"]\nhomes[[\"built\", \"age\"]].tail(3)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "       built   age\n1457  1956.0  70.0\n1458  2007.0  19.0\n1459  2000.0  26.0",
+    "table": {
+     "columns": [
+      "built",
+      "age"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "1457",
+       "1956.0",
+       "70.0"
+      ],
+      [
+       "1458",
+       "2007.0",
+       "19.0"
+      ],
+      [
+       "1459",
+       "2000.0",
+       "26.0"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 11,
+  "n": 11,
+  "source": "homes[\"price\"] / homes[\"sqft\"]",
+  "outputs": [
+   {
+    "type": "error",
+    "ename": "TypeError",
+    "evalue": "unsupported operand type(s) for /: 'str' and 'int'",
+    "traceback": "---------------------------------------------------------------------------\nTypeError                                 Traceback (most recent call last)\nCell In[11], line 1\n----> 1 homes[\"price\"] / homes[\"sqft\"]\n\nFile /home/ana/house-prices/.venv/lib/python3.15/site-packages/pandas/core/ops/common.py:140, in _unpack_zerodim_and_defer.<locals>.new_method(self, other)\n    137     other = sanitize_array(other, None)\n    138     other = ensure_wrapped_if_datetimelike(other)\n--> 140 return method(self, other)\n\nFile /home/ana/house-prices/.venv/lib/python3.15/site-packages/pandas/core/arraylike.py:235, in OpsMixin.__truediv__(self, other)\n    233 @unpack_zerodim_and_defer(\"__truediv__\")\n    234 def __truediv__(self, other) -> Self:\n--> 235     return self._arith_method(other, operator.truediv)\n\nFile /home/ana/house-prices/.venv/lib/python3.15/site-packages/pandas/core/series.py:7388, in Series._arith_method(self, other, op)\n   7386     def _arith_method(self, other, op) -> Series:\n   7387         self, other = self._align_for_op(other)\n-> 7388         return base.IndexOpsMixin._arith_method(self, other, op)\n\nFile /home/ana/house-prices/.venv/lib/python3.15/site-packages/pandas/core/base.py:1717, in IndexOpsMixin._arith_method(self, other, op)\n   1714     rvalues = np.arange(rvalues.start, rvalues.stop, rvalues.step)\n   1716 with np.errstate(all=\"ignore\"):\n-> 1717     result = ops.arithmetic_op(lvalues, rvalues, op)\n   1719 return self._construct_result(result, name=res_name, other=other)\n\nFile /home/ana/house-prices/.venv/lib/python3.15/site-packages/pandas/core/ops/array_ops.py:282, in arithmetic_op(left, right, op)\n    273 right = ensure_wrapped_if_datetimelike(right)\n    275 if (\n    276     should_extension_dispatch(left, right)\n    277     or isinstance(right, (Timedelta, BaseOffset, Timestamp))\n   (...)    280     # Timedelta/Timestamp and other custom scalars are included in the check\n    281     # because numexpr will fail on it, see GH#31457\n--> 282     res_values = op(left, right)\n    283 else:\n    284     # TODO we should handle EAs consistently and move this check before the if/else\n    285     # (https://github.com/pandas-dev/pandas/issues/41165)\n    286     # error: Argument 2 to \"_bool_arith_check\" has incompatible type\n    287     # \"Union[ExtensionArray, ndarray[Any, Any]]\"; expected \"ndarray[Any, Any]\"\n    288     _bool_arith_check(op, left, right)  # type: ignore[arg-type]\n\nFile /home/ana/house-prices/.venv/lib/python3.15/site-packages/pandas/core/ops/common.py:140, in _unpack_zerodim_and_defer.<locals>.new_method(self, other)\n    137     other = sanitize_array(other, None)\n    138     other = ensure_wrapped_if_datetimelike(other)\n--> 140 return method(self, other)\n\nFile /home/ana/house-prices/.venv/lib/python3.15/site-packages/pandas/core/arraylike.py:235, in OpsMixin.__truediv__(self, other)\n    233 @unpack_zerodim_and_defer(\"__truediv__\")\n    234 def __truediv__(self, other) -> Self:\n--> 235     return self._arith_method(other, operator.truediv)\n\nFile /home/ana/house-prices/.venv/lib/python3.15/site-packages/pandas/core/arrays/string_.py:1301, in StringArray._cmp_method(self, other, op)\n   1299 result = np.empty_like(self._ndarray, dtype=\"object\")\n   1300 result[mask] = self.dtype.na_value\n-> 1301 result[valid] = op(self._ndarray[valid], other)\n   1302 # GH#40624 is_string_array is False for a length-zero array, but a\n   1303 #  length-zero result should keep the string dtype\n   1304 if len(result) and not lib.is_string_array(result, skipna=True):\n\nTypeError: unsupported operand type(s) for /: 'str' and 'int'"
+   }
+  ]
+ },
+ {
+  "cell": 12,
+  "n": 12,
+  "source": "homes[\"area\"].value_counts()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "area\nHillcrest     330\nNorthgate     304\nOld Town      279\nEastfield     261\nRiverside     246\nOld town       20\nRiverside      20\nName: count, dtype: int64"
+   }
+  ]
+ },
+ {
+  "cell": 13,
+  "n": 13,
+  "source": "homes[\"area\"] = homes[\"area\"].str.strip()\nhomes[\"area\"].value_counts()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "area\nHillcrest    330\nNorthgate    304\nOld Town     279\nRiverside    266\nEastfield    261\nOld town      20\nName: count, dtype: int64"
+   }
+  ]
+ },
+ {
+  "cell": 14,
+  "n": 14,
+  "source": "as_text = homes[\"area\"].memory_usage(deep=True)\nas_category = homes[\"area\"].astype(\"category\").memory_usage(deep=True)\nas_text, as_category",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(84513, 1938)"
+   }
+  ]
+ }
+]
