@@ -4,5 +4,9 @@
   "site": "https://graphl.in",
   "appPath": "/data-science-house-prices",
   "hashtags": "#DataScience #Pandas #Python #MachineLearning #TechEducation",
-  "panelBg": "radial-gradient(118% 104% at 70% 34%, #f59a5c 0%, #c4521a 44%, #14100d 100%)"
+  "panelBg": "radial-gradient(118% 104% at 70% 34%, #f59a5c 0%, #c4521a 44%, #14100d 100%)",
+  "film": {
+    "title": "Learn data science by predicting house prices: full course, beginner to professional",
+    "blurb": "Every line of code is really run on CPython 3.15.1 — pandas 3.1.0, NumPy 2.5.4, SciPy 1.18.1, scikit-learn 1.9.1 — so every table, every chart and every printed value you see is real output."
+  }
 }

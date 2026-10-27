@@ -11,7 +11,11 @@ Scope, sections and side panes are in [`COURSE-PLAN.md`](COURSE-PLAN.md); author
 ## Status
 
 All 11 courses authored 2026-10-27, rendered at 4K, checked and looked at; awaiting the owner's
-review. No audio yet. Where the build departed from the plan: COURSE-PLAN.md, "As authored".
+review. All 71 narrations recorded, and the courses captured to `scripts/out/<course>.mp4`. The
+YouTube film is cut: **`scripts/out/film.mp4`, 1:33:16**, with its description and chapters in
+[`output/film-description.txt`](output/film-description.txt) and its cover in
+[`output/thumbnails/`](output/thumbnails/). Where the build departed from the plan:
+COURSE-PLAN.md, "As authored".
 
 | # | Course | Sections | Notebook / frame |
 | --- | --- | --- | --- |
@@ -43,6 +47,19 @@ npm run check:spine && npm run check:data             # replays every step; the 
 npm run shots -- <course>                             # 4K PNGs in out/shots/, then look
 ```
 
+## Make the video
+
+```sh
+npm run gen:audio                    # scripts/audio-manifest.json; .wav via Colab + Chatterbox
+npm run record:all                   # every course → scripts/out/<course>.mp4 (4K, segment-cached)
+npm run film                         # all 71 sections → scripts/out/film.mp4 + film.txt (chapters)
+npm run thumb:film                   # output/thumbnails/film.png, cut from a real spine session
+```
+
+`film` concatenates the per-section segments as a stream copy — no re-encode — then applies one
+linear loudness pass to hit YouTube's -14 LUFS without clipping. Chapter offsets come from each
+segment's probed duration, so they cannot drift from the film they index.
+
 ## Layout
 
 ```
@@ -52,4 +69,6 @@ src/scenes/<course>/     declarative scenes (never x/y)
 src/scenes/notebook.ts   the notebook frame; ide.ts the IDE frame; lab.ts lab output
 spine/<course>/<step>/   the project as real files, one cumulative snapshot per step
 scripts/                 spine.py, run_notebook.py, nb.py, generate_data.py, checks, shots
+scripts/film.mjs         every segment → the one YouTube film; thumb-film.mjs its cover
+output/                  the publishable artefacts: film-description.txt, thumbnails/
 ```

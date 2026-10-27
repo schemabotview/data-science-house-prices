@@ -1,0 +1,77 @@
+Learn data science by predicting house prices: full course, beginner to professional
+
+71 sections, 11 courses, 1:33:16.
+Every line of code is really run on CPython 3.15.1 — pandas 3.1.0, NumPy 2.5.4, SciPy 1.18.1, scikit-learn 1.9.1 — so every table, every chart and every printed value you see is real output.
+
+⏱ CHAPTERS
+0:00:00 ▸ Data science, and what we'll build — What data science is
+0:01:18 What we'll build
+0:02:37 ▸ A notebook and the data — A project, its own Python, four tools
+0:04:11 What a notebook is
+0:05:40 read_csv: the sales, as a DataFrame
+0:07:17 Anatomy of a DataFrame: an index and Series
+0:08:51 Execution order: a stale answer
+0:10:19 NumPy underneath: why columns are fast
+0:11:54 ▸ Ask the table questions — Columns and rows: .loc and .iloc
+0:13:12 Boolean masks: keep the rows you ask for
+0:14:34 Sorting: labels travel with their rows
+0:15:45 New columns, and the first wall: price is text
+0:17:05 Text: one area, three spellings
+0:18:25 Dates: two formats, one column
+0:19:47 Copy-on-Write: change the frame, not a copy
+0:21:07 ▸ Make the data trustworthy — Missing values: count the gaps
+0:22:16 Missing means something: a decision per column
+0:23:28 Wrong types: price, from text to numbers
+0:24:47 Units: a batch measured in square metres
+0:26:04 Duplicates: one sale, entered twice
+0:27:17 Outliers: a question, not an error
+0:28:32 Tidy data: what clean means
+0:29:50 clean(): every rule in one function
+0:31:14 ▸ Group, combine, reshape — groupby: which area costs most
+0:32:34 Several statistics per group: agg
+0:33:48 Pivot tables: area by bedrooms
+0:35:04 Merge: joining area facts, and the join that failed
+0:36:23 Four ways to join
+0:37:37 Time: the trend through the noise
+0:38:49 Long and wide: one table, two shapes
+0:40:04 ▸ See it — Distributions: the shape of prices
+0:41:23 The log scale: prices move in percentages
+0:42:40 Relationships: price against size
+0:43:56 Comparing groups: medians and their spread
+0:45:09 Correlation: every pair at once
+0:46:31 Honest charts: where the axis starts
+0:47:52 ▸ How sure are we? — Centre and spread: why prices use the median
+0:49:11 Samples: every answer is a little off
+0:50:34 The bootstrap: how sure, from one sample
+0:51:55 A confidence interval for Riverside
+0:53:15 Does a garage add value? A permutation test
+0:54:32 p-values, plainly
+0:55:52 Correlation is not causation
+0:57:20 ▸ From columns to model inputs — Target and features: X and y
+0:58:39 Train and test: the honest exam
+0:59:52 Leakage: the perfect score that is a lie
+1:01:10 Encoding categories: one-hot
+1:02:22 Scaling: fit on train, apply to both
+1:03:39 A pipeline: every step in one object
+1:04:56 ▸ Predict prices — A baseline: the number to beat
+1:06:10 A straight line on size
+1:07:28 How least squares fits a line
+1:08:47 Many features, and the rule recovered
+1:10:09 A log target: tried, measured, dropped
+1:11:28 A decision tree: questions in order
+1:12:42 Gradient boosting, and the leaderboard
+1:14:02 Overfitting: memorising is not learning
+1:15:17 ▸ Validate and explain — Cross-validation: five exams, no peeking
+1:16:30 Tuning: a grid of settings, judged fairly
+1:17:47 Where it is wrong
+1:19:03 What it uses: permutation importance
+1:20:18 An interval, not a number
+1:21:36 When not to trust it
+1:22:54 Reproducible: same code, same numbers
+1:24:06 ▸ From notebook to tool — Notebook to module
+1:25:25 Tests: every fault, guarded
+1:26:40 Train and save
+1:28:02 A command: value a house
+1:29:20 Batch: a file of listings
+1:30:37 A web API with FastAPI
+1:31:59 Where next

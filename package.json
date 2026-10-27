@@ -12,7 +12,7 @@
     "build:snapshot": "vite build --outDir dist-snapshot",
     "capture": "vite preview --outDir dist-snapshot --port 5181",
     "record": "graphl-record",
-    "record:all": "graphl-record-all",
+    "record:all": "caffeinate -ims graphl-record-all",
     "record:reels": "graphl-record-reels",
     "shots:4k": "graphl-shots-4k",
     "gen:audio": "graphl-gen-audio",
@@ -20,7 +20,9 @@
     "thumb": "graphl-thumb",
     "check:spine": "python scripts/spine.py",
     "check:data": "python scripts/generate_data.py --check",
-    "shots": "node scripts/shots.mjs"
+    "shots": "node scripts/shots.mjs",
+    "film": "node scripts/film.mjs",
+    "thumb:film": "node scripts/thumb-film.mjs"
   },
   "dependencies": {
     "@graphlearning/graphl-flow": "^0.4.0",
