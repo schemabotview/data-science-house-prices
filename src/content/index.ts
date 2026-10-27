@@ -1,5 +1,6 @@
 import { setup } from './setup'
 import { select } from './select'
+import { clean } from './clean'
 import type { Course, Section } from './types'
 
 // Course registry, in syllabus order. One course per chapter of COURSE-PLAN.md; a course is
@@ -7,6 +8,7 @@ import type { Course, Section } from './types'
 export const COURSES: Record<string, Course> = {
   [setup.id]: setup,
   [select.id]: select,
+  [clean.id]: clean,
 }
 
 export type { Course, Section }

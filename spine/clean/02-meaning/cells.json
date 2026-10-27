@@ -1,0 +1,46 @@
+[
+ {
+  "cell": 1,
+  "n": 1,
+  "source": "import pandas as pd\n\nhomes = pd.read_csv(\"../data/homes.csv\")\nhomes.isna().sum()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "id             0\nsold           0\nagent          0\narea           0\nsqft           0\nbeds           0\nbuilt         13\ngarage       449\ncondition      0\nprice          0\ndtype: int64"
+   }
+  ]
+ },
+ {
+  "cell": 2,
+  "n": 2,
+  "source": "homes.isna().mean().round(3)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "id           0.000\nsold         0.000\nagent        0.000\narea         0.000\nsqft         0.000\nbeds         0.000\nbuilt        0.009\ngarage       0.308\ncondition    0.000\nprice        0.000\ndtype: float64"
+   }
+  ]
+ },
+ {
+  "cell": 3,
+  "n": 3,
+  "source": "homes[\"garage\"].value_counts(dropna=False)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "garage\n1.0    574\nNaN    449\n2.0    375\n3.0     62\nName: count, dtype: int64"
+   }
+  ]
+ },
+ {
+  "cell": 4,
+  "n": 4,
+  "source": "homes[\"garage\"] = homes[\"garage\"].fillna(0).astype(int)\nhomes.isna().sum()[lambda s: s > 0]",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "built    13\ndtype: int64"
+   }
+  ]
+ }
+]

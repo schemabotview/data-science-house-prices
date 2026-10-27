@@ -1,0 +1,263 @@
+[
+ {
+  "cell": 1,
+  "n": 1,
+  "source": "import pandas as pd\n\nhomes = pd.read_csv(\"../data/homes.csv\")\nhomes.isna().sum()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "id             0\nsold           0\nagent          0\narea           0\nsqft           0\nbeds           0\nbuilt         13\ngarage       449\ncondition      0\nprice          0\ndtype: int64"
+   }
+  ]
+ },
+ {
+  "cell": 2,
+  "n": 2,
+  "source": "homes.isna().mean().round(3)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "id           0.000\nsold         0.000\nagent        0.000\narea         0.000\nsqft         0.000\nbeds         0.000\nbuilt        0.009\ngarage       0.308\ncondition    0.000\nprice        0.000\ndtype: float64"
+   }
+  ]
+ },
+ {
+  "cell": 3,
+  "n": 3,
+  "source": "homes[\"garage\"].value_counts(dropna=False)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "garage\n1.0    574\nNaN    449\n2.0    375\n3.0     62\nName: count, dtype: int64"
+   }
+  ]
+ },
+ {
+  "cell": 4,
+  "n": 4,
+  "source": "homes[\"garage\"] = homes[\"garage\"].fillna(0).astype(int)\nhomes.isna().sum()[lambda s: s > 0]",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "built    13\ndtype: int64"
+   }
+  ]
+ },
+ {
+  "cell": 5,
+  "n": 5,
+  "source": "as_number = pd.to_numeric(homes[\"price\"], errors=\"coerce\")\nhomes.loc[as_number.isna(), [\"agent\", \"price\"]].head(4)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "    agent     price\n36  Bloom  £190,800\n43  Bloom  £263,300\n60  Bloom  £194,300\n66  Bloom  £166,900",
+    "table": {
+     "columns": [
+      "agent",
+      "price"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "36",
+       "Bloom",
+       "£190,800"
+      ],
+      [
+       "43",
+       "Bloom",
+       "£263,300"
+      ],
+      [
+       "60",
+       "Bloom",
+       "£194,300"
+      ],
+      [
+       "66",
+       "Bloom",
+       "£166,900"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 6,
+  "n": 6,
+  "source": "as_number.isna().sum()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "np.int64(45)"
+   }
+  ]
+ },
+ {
+  "cell": 7,
+  "n": 7,
+  "source": "digits = homes[\"price\"].str.replace(\"£\", \"\").str.replace(\",\", \"\")\nhomes[\"price\"] = pd.to_numeric(digits)\nhomes[\"price\"].dtype, homes[\"price\"].median()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(dtype('int64'), np.float64(251400.0))"
+   }
+  ]
+ },
+ {
+  "cell": 8,
+  "n": 8,
+  "source": "iso = pd.to_datetime(homes[\"sold\"], format=\"%Y-%m-%d\", errors=\"coerce\")\nuk = pd.to_datetime(homes[\"sold\"], format=\"%d/%m/%Y\", errors=\"coerce\")\nhomes[\"sold\"] = iso.fillna(uk)\nper_bed = homes[\"sqft\"] / homes[\"beds\"]\nper_bed.describe().round()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "count    1460.0\nmean      512.0\nstd       170.0\nmin        30.0\n25%       414.0\n50%       485.0\n75%       576.0\nmax      1659.0\ndtype: float64"
+   }
+  ]
+ },
+ {
+  "cell": 9,
+  "n": 9,
+  "source": "homes.loc[per_bed < 200, [\"sold\", \"agent\", \"sqft\", \"beds\"]].head(4)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "          sold    agent  sqft  beds\n565 2023-04-02  Keyline   144     4\n566 2023-04-04  Keyline   189     5\n570 2023-04-07  Keyline   147     2\n577 2023-04-17  Keyline    96     2",
+    "table": {
+     "columns": [
+      "sold",
+      "agent",
+      "sqft",
+      "beds"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "565",
+       "2023-04-02",
+       "Keyline",
+       "144",
+       "4"
+      ],
+      [
+       "566",
+       "2023-04-04",
+       "Keyline",
+       "189",
+       "5"
+      ],
+      [
+       "570",
+       "2023-04-07",
+       "Keyline",
+       "147",
+       "2"
+      ],
+      [
+       "577",
+       "2023-04-17",
+       "Keyline",
+       "96",
+       "2"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 10,
+  "n": 10,
+  "source": "spring_2023 = homes[\"sold\"].between(\"2023-04-01\", \"2023-06-30\")\nbatch = (homes[\"agent\"] == \"Keyline\") & spring_2023\nbatch.sum(), (per_bed[batch] < 200).sum(), (per_bed[~batch] < 200).sum()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(np.int64(20), np.int64(20), np.int64(1))"
+   }
+  ]
+ },
+ {
+  "cell": 11,
+  "n": 11,
+  "source": "homes.loc[batch, \"sqft\"] = (homes.loc[batch, \"sqft\"] * 10.764).round().astype(int)\n(homes[\"sqft\"] / homes[\"beds\"]).describe().round()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "count    1460.0\nmean      519.0\nstd       163.0\nmin        91.0\n25%       416.0\n50%       487.0\n75%       578.0\nmax      1659.0\ndtype: float64"
+   }
+  ]
+ },
+ {
+  "cell": 12,
+  "n": 12,
+  "source": "homes.duplicated().sum()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "np.int64(6)"
+   }
+  ]
+ },
+ {
+  "cell": 13,
+  "n": 13,
+  "source": "homes[homes.duplicated(keep=False)][[\"id\", \"sold\", \"area\", \"price\"]].head(4)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "       id       sold       area   price\n395  1396 2022-08-09  Northgate  183100\n396  1396 2022-08-09  Northgate  183100\n688  1688 2023-08-25   Old Town  212300\n689  1688 2023-08-25   Old Town  212300",
+    "table": {
+     "columns": [
+      "id",
+      "sold",
+      "area",
+      "price"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "395",
+       "1396",
+       "2022-08-09",
+       "Northgate",
+       "183100"
+      ],
+      [
+       "396",
+       "1396",
+       "2022-08-09",
+       "Northgate",
+       "183100"
+      ],
+      [
+       "688",
+       "1688",
+       "2023-08-25",
+       "Old Town",
+       "212300"
+      ],
+      [
+       "689",
+       "1688",
+       "2023-08-25",
+       "Old Town",
+       "212300"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 14,
+  "n": 14,
+  "source": "homes = homes.drop_duplicates()\nhomes.shape",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(1454, 10)"
+   }
+  ]
+ }
+]
