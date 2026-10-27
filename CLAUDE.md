@@ -13,13 +13,16 @@ chapter of the video.
 faults. Change it first; never drift from it.
 
 Engine `@graphlearning/graphl-flow` ^0.4.0 (the notebook cell, `group.cell` / `code.output`), shell
-`@graphlearning/shell` ^1.0.1 with `overrides` letting it take engine 0.4. Sister repo:
-**python-expense-tracker** (same infra: spine, checks, IDE frame). Port from it; do not reinvent.
+`@graphlearning/shell` ^1.0.3, which peers on engine 0.4 itself — so there is **no `overrides`
+block**. Sister repo: **python-expense-tracker** (same infra: spine, checks, IDE frame). Port from it;
+do not reinvent.
 
-**Engine 0.4.0 is not on npm yet.** There is no package-lock.json until it is: install the packed
-tarball locally (`npm pack` in graphl-flow, then `npm install <tgz>` here and restore package.json),
-never commit a `file:` dependency. When 0.4.0 is published: `npm install`, commit the lock, delete
-this paragraph.
+Both are on npm: `npm install` plus the committed `package-lock.json`, nothing else. If a future
+engine outruns the shell's peer range, widen the range in **ui-shell** and publish it; do not reach
+for an override, and never the `$@graphlearning/graphl-flow` back-reference form — npm 11 cannot
+dereference `$`-refs for scoped names and ERESOLVEs with `graphl-flow@undefined`.
+
+After a wiped `node_modules`, check-render also needs `npx playwright install chromium`.
 
 ## Status
 
