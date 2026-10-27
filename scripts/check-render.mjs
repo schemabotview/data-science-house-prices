@@ -101,6 +101,13 @@ try {
             out.push(`plot '${svg.closest('[data-id]').dataset.id}' clips text "${t.textContent}"`)
         }
       }
+      // Plot text must not collide: six category labels in a compact plot ran together into one
+      // unreadable word (shape-groupby's first build) while every text sat inside its SVG.
+      for (const svg of document.querySelectorAll('.gf-plot svg')) {
+        const boxes = [...svg.querySelectorAll('text')].filter((t) => t.textContent.trim()).map((t) => [t.textContent, t.getBoundingClientRect()])
+        const crash = boxes.find(([, a], i) => boxes.some(([, b], j) => j > i && a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1))
+        if (crash) out.push(`plot '${svg.closest('[data-id]').dataset.id}': text "${crash[0]}" overlaps other text`)
+      }
       const BODY = '.gf-item-title, .gf-item-sub, .gf-bullets li, .gf-table td, .gf-line, .gf-tree-name, .gf-note, .gf-edge-label, .gf-cell-n'
       const sizes = [...document.querySelectorAll(BODY)].filter((e) => e.textContent.trim()).map((e) => parseFloat(getComputedStyle(e).fontSize) * s)
       if (sizes.length && Math.min(...sizes) < limits.body) out.push(`body text ${Math.min(...sizes).toFixed(1)}px < ${limits.body}px at 4K`)

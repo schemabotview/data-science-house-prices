@@ -1,0 +1,260 @@
+[
+ {
+  "cell": 1,
+  "n": 1,
+  "source": "import pandas as pd\n\nhomes = pd.read_csv(\"../data/homes_clean.csv\", parse_dates=[\"sold\"])\nhomes.shape",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(1453, 10)"
+   }
+  ]
+ },
+ {
+  "cell": 2,
+  "n": 2,
+  "source": "homes.groupby(\"area\")[\"price\"].median().sort_values()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "area\nEastfield    228350.0\nHillcrest    238600.0\nOld town     247800.0\nNorthgate    254000.0\nOld Town     255200.0\nRiverside    293050.0\nName: price, dtype: float64"
+   }
+  ]
+ },
+ {
+  "cell": 3,
+  "n": 3,
+  "source": "homes[\"per_sqft\"] = homes[\"price\"] / homes[\"sqft\"]\nhomes.groupby(\"area\").agg(\n    sales=(\"price\", \"size\"),\n    median_price=(\"price\", \"median\"),\n    median_per_sqft=(\"per_sqft\", \"median\"),\n).round()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "           sales  median_price  median_per_sqft\narea                                           \nEastfield    260      228350.0            166.0\nHillcrest    329      238600.0            179.0\nNorthgate    301      254000.0            185.0\nOld Town     277      255200.0            194.0\nOld town      20      247800.0            186.0\nRiverside    266      293050.0            216.0",
+    "table": {
+     "columns": [
+      "sales",
+      "median_price",
+      "median_per_sqft"
+     ],
+     "index_name": "area",
+     "rows": [
+      [
+       "Eastfield",
+       "260",
+       "228350.0",
+       "166.0"
+      ],
+      [
+       "Hillcrest",
+       "329",
+       "238600.0",
+       "179.0"
+      ],
+      [
+       "Northgate",
+       "301",
+       "254000.0",
+       "185.0"
+      ],
+      [
+       "Old Town",
+       "277",
+       "255200.0",
+       "194.0"
+      ],
+      [
+       "Old town",
+       "20",
+       "247800.0",
+       "186.0"
+      ],
+      [
+       "Riverside",
+       "266",
+       "293050.0",
+       "216.0"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 4,
+  "n": 4,
+  "source": "homes.pivot_table(\n    index=\"area\", columns=\"beds\", values=\"price\", aggfunc=\"median\"\n).round(-3)",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "beds              1         2         3         4         5         6\narea                                                                 \nEastfield  168000.0  192000.0  239000.0  257000.0  325000.0  462000.0\nHillcrest  177000.0  203000.0  244000.0  298000.0  336000.0  405000.0\nNorthgate  213000.0  222000.0  260000.0  294000.0  334000.0  454000.0\nOld Town   198000.0  228000.0  267000.0  305000.0  344000.0  437000.0\nOld town   246000.0  222000.0  250000.0  318000.0  377000.0  371000.0\nRiverside  237000.0  250000.0  289000.0  343000.0  401000.0  466000.0",
+    "table": {
+     "columns": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6"
+     ],
+     "index_name": "area",
+     "rows": [
+      [
+       "Eastfield",
+       "168000.0",
+       "192000.0",
+       "239000.0",
+       "257000.0",
+       "325000.0",
+       "462000.0"
+      ],
+      [
+       "Hillcrest",
+       "177000.0",
+       "203000.0",
+       "244000.0",
+       "298000.0",
+       "336000.0",
+       "405000.0"
+      ],
+      [
+       "Northgate",
+       "213000.0",
+       "222000.0",
+       "260000.0",
+       "294000.0",
+       "334000.0",
+       "454000.0"
+      ],
+      [
+       "Old Town",
+       "198000.0",
+       "228000.0",
+       "267000.0",
+       "305000.0",
+       "344000.0",
+       "437000.0"
+      ],
+      [
+       "Old town",
+       "246000.0",
+       "222000.0",
+       "250000.0",
+       "318000.0",
+       "377000.0",
+       "371000.0"
+      ],
+      [
+       "Riverside",
+       "237000.0",
+       "250000.0",
+       "289000.0",
+       "343000.0",
+       "401000.0",
+       "466000.0"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 5,
+  "n": 5,
+  "source": "areas = pd.read_csv(\"../data/areas.csv\")\nareas",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "        area  school  km_to_centre flood_zone\n0  Riverside       8           1.2        yes\n1   Old Town       7           0.4         no\n2  Hillcrest       6           2.8         no\n3  Northgate       7           3.5         no\n4  Eastfield       4           4.1         no",
+    "table": {
+     "columns": [
+      "area",
+      "school",
+      "km_to_centre",
+      "flood_zone"
+     ],
+     "index_name": "",
+     "rows": [
+      [
+       "0",
+       "Riverside",
+       "8",
+       "1.2",
+       "yes"
+      ],
+      [
+       "1",
+       "Old Town",
+       "7",
+       "0.4",
+       "no"
+      ],
+      [
+       "2",
+       "Hillcrest",
+       "6",
+       "2.8",
+       "no"
+      ],
+      [
+       "3",
+       "Northgate",
+       "7",
+       "3.5",
+       "no"
+      ],
+      [
+       "4",
+       "Eastfield",
+       "4",
+       "4.1",
+       "no"
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "cell": 6,
+  "n": 6,
+  "source": "check = homes.merge(\n    areas, on=\"area\", how=\"left\", validate=\"many_to_one\", indicator=True\n)\ncheck[\"_merge\"].value_counts()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "_merge\nboth          1433\nleft_only       20\nright_only       0\nName: count, dtype: int64"
+   }
+  ]
+ },
+ {
+  "cell": 7,
+  "n": 7,
+  "source": "check.loc[check[\"_merge\"] == \"left_only\", \"area\"].unique()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "<StringArray>\n['Old town']\nLength: 1, dtype: str"
+   }
+  ]
+ },
+ {
+  "cell": 8,
+  "n": 8,
+  "source": "hows = [\"inner\", \"left\", \"right\", \"outer\"]\n{how: len(homes.merge(areas, on=\"area\", how=how)) for how in hows}",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "{'inner': 1433, 'left': 1453, 'right': 1433, 'outer': 1453}"
+   }
+  ]
+ },
+ {
+  "cell": 9,
+  "n": 9,
+  "source": "homes[\"area\"] = homes[\"area\"].str.title()\nhomes = homes.merge(areas, on=\"area\", validate=\"many_to_one\")\nhomes.shape",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(1453, 14)"
+   }
+  ]
+ }
+]

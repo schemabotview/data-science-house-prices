@@ -1,0 +1,81 @@
+[
+ {
+  "cell": 1,
+  "n": 1,
+  "source": "import pandas as pd\n\nhomes = pd.read_csv(\"../data/homes_clean.csv\", parse_dates=[\"sold\"])\nhomes.shape",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(1453, 10)"
+   }
+  ]
+ },
+ {
+  "cell": 2,
+  "n": 2,
+  "source": "homes.groupby(\"area\")[\"price\"].median().sort_values()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "area\nEastfield    228350.0\nHillcrest    238600.0\nOld town     247800.0\nNorthgate    254000.0\nOld Town     255200.0\nRiverside    293050.0\nName: price, dtype: float64"
+   }
+  ]
+ },
+ {
+  "cell": 3,
+  "n": 3,
+  "source": "homes[\"per_sqft\"] = homes[\"price\"] / homes[\"sqft\"]\nhomes.groupby(\"area\").agg(\n    sales=(\"price\", \"size\"),\n    median_price=(\"price\", \"median\"),\n    median_per_sqft=(\"per_sqft\", \"median\"),\n).round()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "           sales  median_price  median_per_sqft\narea                                           \nEastfield    260      228350.0            166.0\nHillcrest    329      238600.0            179.0\nNorthgate    301      254000.0            185.0\nOld Town     277      255200.0            194.0\nOld town      20      247800.0            186.0\nRiverside    266      293050.0            216.0",
+    "table": {
+     "columns": [
+      "sales",
+      "median_price",
+      "median_per_sqft"
+     ],
+     "index_name": "area",
+     "rows": [
+      [
+       "Eastfield",
+       "260",
+       "228350.0",
+       "166.0"
+      ],
+      [
+       "Hillcrest",
+       "329",
+       "238600.0",
+       "179.0"
+      ],
+      [
+       "Northgate",
+       "301",
+       "254000.0",
+       "185.0"
+      ],
+      [
+       "Old Town",
+       "277",
+       "255200.0",
+       "194.0"
+      ],
+      [
+       "Old town",
+       "20",
+       "247800.0",
+       "186.0"
+      ],
+      [
+       "Riverside",
+       "266",
+       "293050.0",
+       "216.0"
+      ]
+     ]
+    }
+   }
+  ]
+ }
+]

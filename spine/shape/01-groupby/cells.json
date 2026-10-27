@@ -1,0 +1,24 @@
+[
+ {
+  "cell": 1,
+  "n": 1,
+  "source": "import pandas as pd\n\nhomes = pd.read_csv(\"../data/homes_clean.csv\", parse_dates=[\"sold\"])\nhomes.shape",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "(1453, 10)"
+   }
+  ]
+ },
+ {
+  "cell": 2,
+  "n": 2,
+  "source": "homes.groupby(\"area\")[\"price\"].median().sort_values()",
+  "outputs": [
+   {
+    "type": "result",
+    "text": "area\nEastfield    228350.0\nHillcrest    238600.0\nOld town     247800.0\nNorthgate    254000.0\nOld Town     255200.0\nRiverside    293050.0\nName: price, dtype: float64"
+   }
+  ]
+ }
+]
