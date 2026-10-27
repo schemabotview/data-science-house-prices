@@ -15,7 +15,7 @@ const FILE = 'notebooks/stats.ipynb'
 const NBS = ['explore.ipynb', 'select.ipynb', 'clean.ipynb', 'shape.ipynb', 'see.ipynb', 'stats.ipynb']
 const files = { active: FILE, notebooks: NBS, data: ['areas.csv', 'homes.csv', 'homes_clean.csv'] }
 const C = (x: unknown) => x as Cell[]
-const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`
+const gbp = (n: number) => `${n < 0 ? '−' : ''}£${Math.abs(Math.round(n)).toLocaleString('en-GB')}`
 const nums = (text: string) => [...text.replace(/np\.\w+\(/g, '').matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0]))
 const fig = (cells: Cell[], n: number) => cells.find((c) => c.cell === n)!.figure![0]
 

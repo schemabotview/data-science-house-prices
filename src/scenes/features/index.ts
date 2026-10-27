@@ -15,7 +15,7 @@ const NBS = ['explore.ipynb', 'select.ipynb', 'clean.ipynb', 'shape.ipynb', 'see
 const files = { active: FILE, notebooks: NBS, data: ['areas.csv', 'homes.csv', 'homes_clean.csv'] }
 const C = (x: unknown) => x as Cell[]
 const nums = (text: string) => [...text.replace(/np\.\w+\(/g, '').matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0]))
-const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`
+const gbp = (n: number) => `${n < 0 ? '−' : ''}£${Math.abs(Math.round(n)).toLocaleString('en-GB')}`
 
 // §8.1 — the target and the features: what the model sees, and what it must not.
 const head = outputOf(C(f1), 3).table!
