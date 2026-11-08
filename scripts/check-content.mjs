@@ -20,7 +20,7 @@
 // Run: npm run check
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { isIde, loadRegistry, nodesOf } from './registry.mjs'
+import { frameOf, isIde, loadRegistry, nodesOf } from './registry.mjs'
 
 const { COURSES, SCENES, IDE, NB } = await loadRegistry()
 const problems = []
@@ -80,12 +80,20 @@ for (const [id, scene] of Object.entries(SCENES)) {
     const wide = lines.find((l) => l.replace(/^! /, '').length > IDE.EDITOR_COLS)
     if (wide) problems.push(`scene ${id}  a terminal line is longer than ${IDE.EDITOR_COLS} columns — "${wide.slice(0, 40)}…"`)
   }
-  // --- 5b. a notebook cell's input fits the notebook's width ----------------------------------------
+  // (5b, a cell's input fitting NB_COLS, retired with frame v2: inputs soft-wrap, as JupyterLab's do.)
+  // --- 7. the strict side pane (frame v2, linux-admin's rule): at most two parts, and with two, one is
+  // a diagram (a group or a plot) — never two tables, never a table and a note.
+  if (frameOf(scene) === 'notebook') {
+    const parts = scene.nodes.find((n) => n.id === 'side').children
+    const diagram = (n) => n.type === 'group' || n.type === 'plot'
+    if (parts.length > 2) problems.push(`scene ${id}  the side pane has ${parts.length} parts (${parts.map((n) => n.type).join(', ')}) — one diagram and at most one table`)
+    else if (parts.length === 2 && !parts.some(diagram)) problems.push(`scene ${id}  the side pane is ${parts.map((n) => n.type).join(' + ')} — with two parts, one is a diagram (group or plot)`)
+  }
+  // --- 8. a show range runs forwards inside its code (linux-admin: an anchor that matched an earlier
+  // line inverted a range, and a console silently dropped rows with every other check green)
   for (const { node } of all)
-    if (node.type === 'code' && !node.output && /^c\d+$/.test(node.id)) {
-      const wide = node.code.split('\n').find((l) => l.length > NB.NB_COLS)
-      if (wide) problems.push(`scene ${id}  cell ${node.id} has a ${wide.length}-column line; the notebook holds ${NB.NB_COLS} — "${wide.slice(0, 40)}…"`)
-    }
+    if (node.type === 'code' && node.show)
+      for (const [a, b] of node.show) if (!(a >= 1 && a <= b && b <= node.code.split('\n').length)) problems.push(`scene ${id}  '${node.id}' show range [${a}, ${b}] is empty or outside its lines`)
   for (const n of side)
     if (n.type === 'item' && (n.bullets?.length ?? 0) > MAX_CAPTION_BULLETS)
       problems.push(`scene ${id}  '${n.id}' has ${n.bullets.length} bullets — a side-pane list is a caption (≤ ${MAX_CAPTION_BULLETS}); draw the rest`)

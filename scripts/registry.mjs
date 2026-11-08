@@ -46,11 +46,11 @@ export function nodesOf(scene) {
 
 /**
  * Which template built a scene: 'ide' (src/scenes/ide.ts — explorer, editor, side), 'notebook'
- * (src/scenes/notebook.ts — explorer, notebook, side), or null for a concept scene.
+ * (src/scenes/notebook.ts — notebook, side: v2 draws no explorer), or null for a concept scene.
  */
 export function frameOf(scene) {
   const ids = new Set(nodesOf(scene).map(({ node }) => node.id))
-  if (!ids.has('explorer') || !ids.has('side')) return null
+  if (!ids.has('side')) return null
   return ids.has('notebook') ? 'notebook' : ids.has('editor') ? 'ide' : null
 }
 export const isIde = (scene) => frameOf(scene) !== null

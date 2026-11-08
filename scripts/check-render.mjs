@@ -35,7 +35,10 @@ const SIDE_FILL = +(process.env.SIDE_FILL ?? 2 / 3)
 const SPREAD_FILL = +(process.env.SPREAD_FILL ?? 0.5)
 
 const { COURSES, SCENES } = await loadRegistry()
+// `node scripts/check-render.mjs see trust-tuning` checks only these slugs (or slug prefixes: a course).
+const asked = process.argv.slice(2)
 const sections = Object.values(COURSES).flatMap((c) => c.sections.map((s) => ({ slug: `${c.id}-${s.id}`, section: s, scene: SCENES[s.scene] })))
+  .filter(({ slug }) => !asked.length || asked.some((a) => slug.startsWith(a)))
 
 const problems = []
 const ide = []
@@ -201,7 +204,7 @@ try {
       // --- the IDE template -----------------------------------------------------------------------------
       let panes = null
       if (ide) {
-        const names = ide === 'notebook' ? ['explorer', 'notebook', 'side'] : ['explorer', 'editor', 'terminal', 'side']
+        const names = ide === 'notebook' ? ['notebook', 'side'] : ['explorer', 'editor', 'terminal', 'side']
         panes = Object.fromEntries(names.map((p) => [p, node(p) && Object.values(R(node(p))).map((v) => Math.round(v))]))
         // A fixed pane holds its content: a notebook's cells (or anything in a pane) running past
         // its bottom would overflow visibly, or — with a floor — grow the pane and move the template.

@@ -1,15 +1,15 @@
-import type { Code, Edge, Group, Plot, PlotSeries, SceneModel, SceneNode, Table, Tree, TreeEntry } from '@graphlearning/graphl-flow'
-import { FRAME_H, FRAME_W } from './ide'
+import type { Code, Edge, Group, Plot, PlotSeries, SceneModel, SceneNode, Table, TreeEntry } from '@graphlearning/graphl-flow'
+import { FRAME_H, NB_W, SIDE_W } from './grid'
 
-// The NOTEBOOK frame, Courses 2–10 — the IDE template's sibling, the SAME outer size, so cutting
-// between the two never changes the zoom (check-render asserts one fit for every framed section):
+// The NOTEBOOK frame v2, Courses 2–10, on graphl-flow 0.10's shared grid (grid.ts): the SAME 1344 × 756
+// box and fit as the IDE frame, so cutting between them never zooms (check-render asserts one fit):
 //
-//   explorer (NB_EXPLORER_W) | notebook (NOTEBOOK_W × FRAME_H) | side pane (NB_SIDE_W, fixed)
+//   notebook (NB_W × FRAME_H) | side pane (SIDE_W, fixed, `spread`)
 //
-// The explorer is narrower than the IDE's (a notebook project's tree is short) so the notebook can
-// hold pandas' ten-column head() — the widest output Course 2 prints.
+// No explorer: on the grid's 715px work column a notebook holds ~61 characters and pandas' wide
+// DataFrames do not fit, so the notebook takes the explorer's column too. Its tab names the file.
 //
-// A cell is graphl-flow 0.4's notebook cell (a group with `cell: n`): the `[n]` gutter, the input, its
+// A cell is graphl-flow's notebook cell (a group with `cell: n`): the `[n]` gutter, the input, its
 // outputs. Everything a cell shows comes from the step's cells.json, written by a real kernel
 // (scripts/spine.py): the count, the source, stdout, a DataFrame's HTML table parsed into rows, a
 // traceback. Nothing here is typed.
@@ -17,13 +17,17 @@ import { FRAME_H, FRAME_W } from './ide'
 // A notebook grows down; a frame does not. `show` picks the cells a section is about, and the cells
 // above fold into one `··· N cells above` line, as a scrolled notebook hides them. check-render
 // fails a frame whose cells run past the pane (a floor would let them grow it and move the template).
+//
+// The side pane is STRICT (linux-admin's console frame): at most two parts, and with two, one is a
+// diagram (a group or a plot) and the other at most one table. check-content counts it.
 
-export const NB_EXPLORER_W = 240
-export const NOTEBOOK_W = 940
-const GAP = 10
-export const NB_SIDE_W = FRAME_W - NB_EXPLORER_W - NOTEBOOK_W - 2 * GAP
-/** Characters an input line holds (15px Plex Mono, 9.0px advance) once the gutter and padding are paid. */
-export const NB_COLS = 86
+export const NOTEBOOK_W = NB_W
+export const NB_SIDE_W = SIDE_W
+/** A compact figure in a cell, as wide as the cell's output column (the notebook less the gutter and paddings). */
+export const NB_PLOT_W = NB_W - 150
+/** Characters an input line holds (15px Plex Mono, 9.0px advance) once the gutter and padding (166px,
+ *  measured on the v1 940px notebook, which held 86) are paid. */
+export const NB_COLS = Math.floor((NB_W - 166) / 9)
 
 export interface CellOutput {
   type: 'stream' | 'result' | 'error'
@@ -68,6 +72,8 @@ export interface CellView {
   yScale?: number
   /** Input lines (1-based) to tint. */
   highlight?: number[]
+  /** Input line ranges to keep; each skipped run folds to one `··· N lines` row (frame v2's height). */
+  show?: [number, number][]
   /** A long text output keeps its first `head` and last `tail` lines around a `··· N lines` row. */
   head?: number
   tail?: number
@@ -77,7 +83,8 @@ export interface CellView {
 
 export interface NotebookFrame {
   project?: string
-  tree: TreeEntry[]
+  /** v1's explorer entries: kept so a scene still names its project's files; v2 draws no explorer. */
+  tree?: TreeEntry[]
   /** The notebook's tab: its path under the project. */
   file: string
   /** The step's cells.json. */
@@ -89,7 +96,7 @@ export interface NotebookFrame {
   edges?: Edge[]
 }
 
-export const NB_IDS = { explorer: 'explorer', notebook: 'notebook', side: 'side' } as const
+export const NB_IDS = { notebook: 'notebook', side: 'side' } as const
 
 const trimEnd = (t: string) => t.replace(/\n+$/, '')
 
@@ -142,7 +149,7 @@ function dataframe(id: string, t: NonNullable<CellOutput['table']>, rows?: numbe
  * each has a tick label, else at their centres), lines, scatter points, the axes' limits and labels.
  * Nothing is re-derived: the numbers are the kernel's.
  */
-export function figurePlot(id: string, f: Figure, opts: { compact?: boolean; xScale?: number; yScale?: number; tone?: Plot['tone'] } = {}): Plot {
+export function figurePlot(id: string, f: Figure, opts: { compact?: boolean; w?: number; xScale?: number; yScale?: number; tone?: Plot['tone'] } = {}): Plot {
   const sx = opts.xScale ?? 1, sy = opts.yScale ?? 1
   const r = (v: number, s: number) => Math.round((v / s) * 1000) / 1000
   const labels = f.xticklabels.filter((t) => t)
@@ -158,7 +165,7 @@ export function figurePlot(id: string, f: Figure, opts: { compact?: boolean; xSc
   // Scaled axes here are prices: £k.
   const unit = (label: string, s: number) => (s === 1000 ? (label ? `${label} (£k)` : '£k') : label) || undefined
   return {
-    type: 'plot', id, title: f.title || undefined, compact: opts.compact, tone: opts.tone,
+    type: 'plot', id, title: f.title || undefined, compact: opts.compact, w: opts.w, tone: opts.tone,
     x: categorical ? { labels, label: f.xlabel || undefined } : { min: r(f.xlim[0], sx), max: r(f.xlim[1], sx), label: unit(f.xlabel, sx) },
     y: { min: r(f.ylim[0], sy), max: r(f.ylim[1], sy), label: unit(f.ylabel, sy) },
     series,
@@ -167,7 +174,8 @@ export function figurePlot(id: string, f: Figure, opts: { compact?: boolean; xSc
 
 function cellNode(c: Cell, view: CellView = {}): Group {
   const id = `c${c.cell}`
-  const input: Code = { type: 'code', id, lang: 'python', code: trimEnd(c.source ?? ''), highlight: view.highlight }
+  // `wrap`: a line past the notebook's width soft-wraps, as JupyterLab's editor wraps it.
+  const input: Code = { type: 'code', id, lang: 'python', code: trimEnd(c.source ?? ''), highlight: view.highlight, show: view.show, wrap: true }
   const outs: SceneNode[] = []
   let text: string[] = []
   // Consecutive text outputs (a print, then a repr) read as one block, as Jupyter stacks them.
@@ -185,28 +193,28 @@ function cellNode(c: Cell, view: CellView = {}): Group {
     } else if (o.type === 'result' && o.image && c.figure?.length) {
       // A figure: redrawn from the data matplotlib plotted, where Jupyter shows the picture.
       flush()
-      c.figure.forEach((f, i) => outs.push(figurePlot(`${id}-fig${i || ''}`, f, view)))
+      // compact is the frame-v2 height; `w` gives it the notebook's width, so category labels have room
+      c.figure.forEach((f, i) => outs.push(figurePlot(`${id}-fig${i || ''}`, f, view.compact ? { ...view, w: NB_PLOT_W } : view)))
     } else text.push(trimEnd(o.text ?? ''))
   }
   flush()
   return { type: 'group', id: `cell${c.cell}`, cell: c.n ?? true, children: [input, ...outs] }
 }
 
-export function notebookFrame({ project = 'house-prices', tree, file, cells, show, view = {}, side, edges = [] }: NotebookFrame): SceneModel {
+export function notebookFrame({ file, cells, show, view = {}, side, edges = [] }: NotebookFrame): SceneModel {
   const code = cells.filter((c) => c.markdown === undefined)
   const shown = show ? code.filter((c) => show.includes(c.cell)) : code
   for (const n of show ?? []) if (!code.some((c) => c.cell === n)) throw new Error(`notebook.ts: ${file} has no code cell ${n}`)
   const above = code.filter((c) => c.cell < (shown[0]?.cell ?? 0)).length
   const fold: SceneNode[] = above ? [{ type: 'code', id: 'above', output: true, code: `··· ${above} cell${above === 1 ? '' : 's'} above` }] : []
-  const explorer: Tree = { type: 'tree', id: NB_IDS.explorer, title: project, entries: tree, fill: true, w: NB_EXPLORER_W }
   const notebook: Group = {
-    type: 'group', id: NB_IDS.notebook, title: file.split('/').at(-1), icon: 'jupyter', sub: 'kernel: .venv · Python 3.15.1', tone: 'ingest',
+    type: 'group', id: NB_IDS.notebook, title: `${file.split('/').at(-1)}  ·  kernel .venv, Python 3.15.1`, icon: 'jupyter', tone: 'ingest',
     w: NOTEBOOK_W, h: FRAME_H, children: [...fold, ...shown.map((c) => cellNode(c, view[c.cell]))],
   }
   // `spread`: the side pane's blocks share the frame's full height, evenly, instead of stacking at
   // the top of an empty column.
-  const pane: Group = { type: 'group', id: NB_IDS.side, bare: true, spread: true, w: NB_SIDE_W, minH: FRAME_H, children: side }
-  return { dir: 'row', nodes: [explorer, notebook, pane], edges }
+  const pane: Group = { type: 'group', id: NB_IDS.side, bare: true, spread: true, w: NB_SIDE_W, h: FRAME_H, children: side }
+  return { dir: 'row', padding: 0.01, nodes: [notebook, pane], edges }
 }
 
 /** A cell's first output of a type, for side panes that quote a value the kernel printed. */

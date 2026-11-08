@@ -12,9 +12,9 @@ chapter of the video.
 **`COURSE-PLAN.md` is the source of truth**: courses, sections, side panes, the data and its planted
 faults. Change it first; never drift from it.
 
-Engine `@graphlearning/graphl-flow` ^0.4.0 (the notebook cell, `group.cell` / `code.output`), shell
-`@graphlearning/shell` ^1.0.3, which peers on engine 0.4 itself — so there is **no `overrides`
-block**. Sister repo: **python-expense-tracker** (same infra: spine, checks, IDE frame). Port from it;
+Engine `@graphlearning/graphl-flow` 0.11.0, shell `@graphlearning/shell` 1.1.0, pinned exactly
+(frame v2, COURSE-PLAN "Decided (2026-11-08)"); the shell peers on the engine `>=0.2.0 <1`, so there
+is **no `overrides` block**. Sister repo: **python-expense-tracker** (same infra: spine, checks, IDE frame). Port from it;
 do not reinvent.
 
 Both are on npm: `npm install` plus the committed `package-lock.json`, nothing else. If a future
@@ -68,14 +68,17 @@ Course 11's steps are terminal sessions (pip, pytest, the command, uvicorn + cur
 
 ## Frames
 
-- **Notebook frame** (`src/scenes/notebook.ts`), Courses 2–10: explorer (240) | notebook (940) |
-  side pane (536, `spread`). Cells come from cells.json: `show` picks cells (the rest fold to
+- **Notebook frame v2** (`src/scenes/notebook.ts`), Courses 2–10, on the shared grid (`grid.ts`,
+  1344 × 756): notebook (900) | side pane (434, `spread`, STRICT: ≤ 2 parts, with two one a group or
+  plot — check-content). No explorer. Figures in cells draw `compact` at the notebook's width. Cells come from cells.json: `show` picks cells (the rest fold to
   `··· N cells above`), `view` tints lines and clips long text / DataFrame rows. A DataFrame output
   is a `table` parsed from pandas' own HTML.
 - **IDE frame** (`src/scenes/ide.ts`, the expense tracker's): 2.1 and Course 11.
 - Both side panes `spread` their blocks over the full height; check-render's fill rule is the blocks'
   own height ≥ 50% of the pane (add real content, never padding).
-- Both are 1736 wide at 16:9: check-render asserts every framed section is on ONE fit, and each pane
+- **2026-11-08: Course 6 `see` is on frame v2 (the pilot); the other courses are NOT yet ported and
+  fail the checks until they are.** `node scripts/check-render.mjs <course>` checks one course.
+- Both are 1344 × 756 (v1: 1736 wide): check-render asserts every framed section is on ONE fit, and each pane
   at the same pixels as the first frame of its kind, and that no pane's content runs past it, and
   that no plot text overlaps other plot text (six category labels once ran into one word).
 - **Concept scenes** (◆ full scene) carry real lab output (`src/scenes/lab.ts` `outputOf`).

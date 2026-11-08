@@ -124,9 +124,11 @@ house-prices/
 
 ## Frames
 
-- **Notebook frame** (new in graphl-flow 0.4, `notebook-frame.ts`): explorer | notebook (cells:
-  `[n]` gutter, input, output as text, DataFrame `table` or `plot`) | the fixed side pane. Every
-  notebook frame has the same floors, so they all get the same zoom. There are no edges between panes.
+- **Notebook frame v2** (graphl-flow 0.10's shared grid, Decision below): notebook (900: cells with
+  the `[n]` gutter, input, output as text, DataFrame `table` or `plot`) | the fixed side pane (434).
+  No explorer: the notebook needs the width. Every notebook frame lands on the same fit as the IDE
+  frame. There are no edges between panes. The side pane is STRICT: at most two parts, and with two,
+  one is a diagram (a group or a plot) and the other at most one table.
 - **IDE frame** (Course 11): the expense tracker's template, unchanged.
 - **Concept scene** (◆ full scene): a canonical big picture that cannot fit the side pane at
   ≥ 24px body text. It carries the real output inside as a `code` or `table` node from a lab step.
@@ -324,3 +326,17 @@ Where the authored course departs from the tables above. Each departure came fro
   ranges live in `models/model.json`; `value()` refuses unknown areas and sizes outside the data.
 - **The finished valuation** (Course 1's payoff) is the real one: a 1,710 sq ft Riverside house, built
   2004, two garages: £383,000 (likely £350k–£417k).
+
+## Decided (2026-11-08): frame v2
+
+The v1 frames were their own 1736 × 976 grid and zoomed ≈ 2.0 at 4K, with half-empty side panes of
+three or four parts. python-expense-tracker, typescript-diagram-engine and linux-admin moved to
+graphl-flow 0.10's shared grid (1344 × 756 at a 1% margin, ≈ 2.8× at 4K, code ≈ 42px); this course
+follows: engine 0.11.0, shell 1.1.0, the notebook frame above, the strict side pane. Notebook figures
+draw `compact` (280px high) at the notebook's width; cell inputs soft-wrap as JupyterLab's do; a
+cell's view may fold input lines (`show`) or DataFrame rows (`rows`) that the frame's height cannot
+hold and the side pane already carries.
+
+Piloted on Course 6 `see` (owner review pending), then the other courses; every course is
+re-recorded once all are ported. Narration edited for v2: none so far.
+
