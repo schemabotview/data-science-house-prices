@@ -1,4 +1,5 @@
 import type { SceneModel } from '@graphlearning/graphl-flow'
+import { SIDE_PLOT_W } from '../grid'
 import { notebookFrame, num, outputOf, seriesOf, textOf, type Cell } from '../notebook'
 import { tree } from '../tree'
 import c1 from '../../../spine/clean/01-missing/cells.json'
@@ -23,7 +24,7 @@ const missing = seriesOf(textOf(C(c1), 1))
 const share = new Map(seriesOf(textOf(C(c1), 2)))
 const [rawN, tidyN] = [...textOf(C(c8), 20).matchAll(/\d+/g)].map((m) => Number(m[0]))
 export const cleanMissing: SceneModel = notebookFrame({
-  tree: tree({ ...files, fresh: [FILE] }), file: FILE, cells: C(c1),
+  tree: tree({ ...files, fresh: [FILE] }), file: FILE, cells: C(c1), view: { 1: { head: 4, tail: 1 }, 2: { head: 4, tail: 1 } },
   side: [
     {
       type: 'table', id: 'gaps', title: 'missing, per column', tone: 'ingest', columns: ['column', 'missing', 'share'],
@@ -31,11 +32,10 @@ export const cleanMissing: SceneModel = notebookFrame({
     },
     {
       type: 'group', id: 'nan', title: 'how pandas marks a gap: built is there, garage is ,,', icon: 'search', tone: 'ingest', children: [
-        { type: 'code', id: 'nan-csv', filename: 'homes.csv, line 2', lang: 'text', code: raw.split('\n')[1].split(',').slice(0, 9).join(',') + ',…' },
+        { type: 'code', id: 'nan-csv', filename: 'homes.csv, line 2', lang: 'text', wrap: true, w: SIDE_PLOT_W, code: raw.split('\n')[1].split(',').slice(0, 9).join(',') + ',…' },
         { type: 'item', id: 'nan-pd', title: 'NaN', sub: 'a float: the column becomes float64', icon: 'table' },
       ],
     },
-    { type: 'note', id: 'miss-note', tone: 'consume', text: `isna() is True where a value is missing; .sum() counts the Trues, .mean() gives their share of ${thousands(rawN)} rows.` },
   ],
   edges: [{ from: 'nan-csv', to: 'nan-pd', label: 'read_csv' }],
 })
@@ -47,20 +47,15 @@ export const cleanMeaning: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(c2), show: [3, 4],
   side: [
     {
-      type: 'table', id: 'garage-counts', title: 'garage, NaN included', tone: 'ingest', columns: ['value', 'sales'],
-      rows: garages.map(([k, v]) => ({ cells: [k, v], tone: k === 'NaN' ? 'consume' as const : undefined })),
-    },
-    {
       type: 'table', id: 'decisions', title: 'one decision per column, with its reason', tone: 'store', columns: ['column', 'empty means', 'so'], rows: [
-        { cells: ['garage', 'no garage: no row says 0', 'fill 0'], tone: 'store' },
-        { cells: [builtLeft[0], 'unknown, for old houses', `keep NaN (${builtLeft[1]})`], tone: 'consume' },
+        { cells: ['garage', 'no garage', 'fill 0'], tone: 'store' },
+        { cells: [builtLeft[0], 'unknown', `keep NaN: ${builtLeft[1]}`], tone: 'consume' },
       ],
     },
     {
-      type: 'plot', id: 'garage-after', compact: true, title: 'garages, after fillna(0)', tone: 'store', x: { labels: ['0', '1', '2', '3'] }, y: { min: 0, max: 600, step: 200 },
+      type: 'plot', id: 'garage-after', compact: true, w: SIDE_PLOT_W, title: 'garages, after fillna(0)', tone: 'store', x: { labels: ['0', '1', '2', '3'] }, y: { min: 0, max: 600, step: 200 },
       series: [{ kind: 'bar', label: 'sales', points: ['NaN', '1.0', '2.0', '3.0'].map((key, i) => [i, Number(garages.find(([g]) => g === key)![1])]) }],
     },
-    { type: 'note', id: 'meaning-note', tone: 'store', text: 'Never fill a gap with a number you invented. Fill only what the data itself tells you; leave the rest missing, and say so.' },
   ],
 })
 
@@ -108,18 +103,14 @@ export const cleanUnits: SceneModel = notebookFrame({
       rows: ['min', '25%', '50%', '75%'].map((k) => ({ cells: [k, before.get(k)!, after.get(k)!], tone: k === 'min' ? 'consume' as const : undefined })),
     },
     {
-      type: 'group', id: 'batch', title: 'Keyline, April to June 2023', icon: 'search', tone: 'consume', dir: 'row', children: [
-        { type: 'item', id: 'b-size', title: `${batchSize} sales`, sub: `${batchLow} of them under 200 sq ft a bed`, chip: true },
-        { type: 'item', id: 'b-fix', title: '× 10.764', sub: 'square metres to square feet', chip: true },
+      type: 'group', id: 'batch', title: 'Keyline, April to June 2023', icon: 'search', tone: 'consume', children: [
+        { type: 'item', id: 'b-size', title: `${batchSize} sales by one agent`, sub: `${batchLow} of them under 200 sq ft a bedroom`, icon: 'search' },
+        { type: 'item', id: 'b-fix', title: 'sqft × 10.764', sub: 'square metres to square feet, for that batch only', icon: 'zap', tone: 'store' },
+        { type: 'item', id: 'b-other', title: `${otherLow} other row under 200`, sub: 'a different fault: left for the outliers (§4.6)', icon: 'file', muted: true },
       ],
     },
-    {
-      type: 'table', id: 'suspects', title: 'under 200 sq ft a bedroom (cell 9)', tone: 'consume', columns: ['sold', 'agent', 'sqft', 'beds'],
-      rows: outputOf(C(c4), 9).table!.rows.map((r) => r.slice(1)),
-    },
-    { type: 'note', id: 'units-note', tone: 'consume', text: `Fix the batch the agent named, not every small number: ${otherLow} other row is under 200 too, and it is a different fault (§4.6).` },
   ],
-  edges: [{ from: 'b-size', to: 'b-fix' }],
+  edges: [{ from: 'b-size', to: 'b-fix' }, { from: 'b-fix', to: 'b-other' }],
 })
 
 // §4.5 — duplicates: the same sale twice, same id and all.
@@ -133,19 +124,12 @@ export const cleanDuplicates: SceneModel = notebookFrame({
       rows: pairs.rows.map((r, i) => ({ cells: r, tone: i % 2 ? 'consume' as const : undefined })),
     },
     {
-      type: 'table', id: 'dupe-count', title: 'before and after drop_duplicates()', tone: 'store', columns: ['', 'rows'], rows: [
-        ['read from the file', thousands(rawN)],
-        ['duplicated() — the second copies', String(num(textOf(C(c5), 12)))],
-        { cells: ['after', shape], tone: 'store' },
-      ],
-    },
-    {
-      type: 'group', id: 'compare', title: 'duplicated() compares whole rows', icon: 'search', tone: 'ingest', dir: 'row', children: [
+      type: 'group', id: 'compare', title: 'duplicated() compares whole rows', icon: 'search', tone: 'ingest', children: [
         { type: 'item', id: 'cmp-same', title: 'every column equal', sub: 'True: a copy, drop it', icon: 'check' },
         { type: 'item', id: 'cmp-diff', title: 'same id, a column differs', sub: 'False: you decide which is right', icon: 'search' },
+        { type: 'item', id: 'cmp-after', title: `drop_duplicates(): ${shape}`, sub: 'one copy of each kept', icon: 'table', tone: 'store' },
       ],
     },
-    { type: 'note', id: 'dupe-note', tone: 'consume', text: 'A duplicate is not a second house at the same price. Same id, same date, every column equal: one sale, entered twice.' },
   ],
 })
 
@@ -156,10 +140,10 @@ const quart = new Map(outputOf(C(c6), 15).table!.rows.map((r) => [r[0], Number(r
 const flagged = outputOf(C(c6), 17).table!
 const k = (n: number) => Math.round(n / 1000)
 export const cleanOutliers: SceneModel = notebookFrame({
-  tree: tree(files), file: FILE, cells: C(c6), show: [15, 16, 17, 18],
+  tree: tree(files), file: FILE, cells: C(c6), show: [15, 16, 17, 18], view: { 15: { rows: 3 } },
   side: [
     {
-      type: 'plot', id: 'fences', compact: true, title: 'price (£k): the IQR fences', tone: 'ingest', x: { min: 0, max: 700, step: 100, label: '£k' }, y: { min: 0, max: 2, step: 1 }, grid: false,
+      type: 'plot', id: 'fences', compact: true, w: SIDE_PLOT_W, title: 'price (£k): the IQR fences', tone: 'ingest', x: { min: 0, max: 700, step: 100, label: '£k' }, y: { min: 0, max: 2, step: 1 }, grid: false,
       series: [
         { kind: 'segment', from: [k(quart.get('25%')!), 0.4], to: [k(quart.get('75%')!), 0.4], label: 'middle half', dashed: false, tone: 'store' },
         { kind: 'segment', from: [k(low), 0], to: [k(low), 2], label: 'low fence' },
@@ -168,13 +152,12 @@ export const cleanOutliers: SceneModel = notebookFrame({
       ],
     },
     {
-      type: 'table', id: 'verdicts', title: 'flagged, then decided one by one', tone: 'store', columns: ['row', 'why flagged', 'verdict'], rows: [
-        { cells: [`id ${flagged.rows[0][1]}`, `${flagged.rows[0][4]} beds, ${flagged.rows[0][3]} sq ft`, 'typo: 2 beds'], tone: 'consume' },
-        { cells: [`id ${flagged.rows[1][1]}`, `£${thousands(Number(flagged.rows[1][5]))}`, 'a transfer: drop'], tone: 'consume' },
-        { cells: [`${nHigh} sales`, `over £${k(high)}k`, 'real big houses: keep'], tone: 'store' },
+      type: 'table', id: 'verdicts', title: `flagged: ${nLow} low, ${nHigh} high — each decided`, tone: 'store', columns: ['flagged', 'verdict'], rows: [
+        { cells: [`id ${flagged.rows[0][1]}: ${flagged.rows[0][4]} beds, ${flagged.rows[0][3]} ft²`, 'typo: 2 beds'], tone: 'consume' },
+        { cells: [`id ${flagged.rows[1][1]}: £${thousands(Number(flagged.rows[1][5]))}`, 'transfer: drop'], tone: 'consume' },
+        { cells: [`${nHigh} sales over £${k(high)}k`, 'big houses: keep'], tone: 'store' },
       ],
     },
-    { type: 'note', id: 'out-note', tone: 'ingest', text: `${nLow} below the low fence, ${nHigh} above the high one. An outlier is a question, not an error: only the two that are wrong change.` },
   ],
 })
 
@@ -233,7 +216,7 @@ export const cleanTidy: SceneModel = {
 
 // §4.8 — clean(): every rule in one function, chained, asserted, saved for the next courses.
 export const cleanFunction: SceneModel = notebookFrame({
-  tree: tree({ ...files, data: ['homes.csv', 'homes_clean.csv'], fresh: ['data/homes_clean.csv'] }), file: FILE, cells: C(c8), show: [19, 20, 21], view: { 21: { head: 3, tail: 2 } },
+  tree: tree({ ...files, data: ['homes.csv', 'homes_clean.csv'], fresh: ['data/homes_clean.csv'] }), file: FILE, cells: C(c8), show: [19, 20, 21], view: { 19: { show: [[1, 1], [7, 18]] }, 21: { head: 0 } },
   side: [
     {
       type: 'group', id: 'chain', title: 'clean(raw): one chain', icon: 'workflow', tone: 'ingest', children: [
@@ -252,7 +235,6 @@ export const cleanFunction: SceneModel = notebookFrame({
         ['beds ≤ 6', 'a bedroom typo'],
       ],
     },
-    { type: 'note', id: 'fn-note', tone: 'store', text: 'The asserts are the notebook checking itself: if a rule ever stops holding, the cell fails loudly instead of the chart lying quietly.' },
   ],
   edges: [
     { from: 'k-raw', to: 'k-assign' }, { from: 'k-assign', to: 'k-dupes' }, { from: 'k-dupes', to: 'k-query' }, { from: 'k-query', to: 'k-out' },
