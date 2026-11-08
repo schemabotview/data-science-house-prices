@@ -51,13 +51,14 @@ export const featuresSplit: SceneModel = notebookFrame({
   side: [
     {
       type: 'group', id: 'split', title: 'train_test_split(test_size=0.2)', icon: 'filter', tone: 'ingest', children: [
-        { type: 'item', id: 's-all', title: `${(nTrain + nTest).toLocaleString('en-GB')} sales`, sub: 'shuffled with random_state=1460', chip: true },
+        { type: 'item', id: 's-all', title: `${(nTrain + nTest).toLocaleString('en-GB')} sales`, sub: 'shuffled with random_state=1460', icon: 'table' },
         {
           type: 'group', id: 's-parts', bare: true, dir: 'row', children: [
-            { type: 'item', id: 's-train', title: `train: ${nTrain.toLocaleString('en-GB')}`, sub: 'the model learns here', chip: true },
-            { type: 'item', id: 's-test', title: `test: ${nTest}`, sub: 'locked until the end', chip: true },
+            { type: 'item', id: 's-train', title: `train: ${nTrain.toLocaleString('en-GB')}`, sub: 'the model learns here', icon: 'brain', stack: true },
+            { type: 'item', id: 's-test', title: `test: ${nTest}`, sub: 'locked until the end', icon: 'lock', stack: true, tone: 'consume' },
           ],
         },
+        { type: 'item', id: 's-why', title: 'score on test, once, at the end', sub: 'scored on rows it learned from, a model looks better than it is', icon: 'check', tone: 'store' },
       ],
     },
     {
@@ -65,13 +66,6 @@ export const featuresSplit: SceneModel = notebookFrame({
         ['train', gbp(mTrain)], ['test', gbp(mTest)],
       ],
     },
-    {
-      type: 'table', id: 'roles', title: 'what each part is for', tone: 'ingest', columns: ['part', 'used to'], rows: [
-        ['train', 'fit, compare, tune: as often as you like'],
-        ['test', 'one final score, once, at the end'],
-      ],
-    },
-    { type: 'note', id: 'split-note', tone: 'consume', text: 'Score a model on the rows it learned from and it looks better than it is. The test set is the only honest exam.' },
   ],
   edges: [{ from: 's-all', to: 's-train' }, { from: 's-all', to: 's-test' }],
 })
@@ -125,23 +119,16 @@ export const featuresEncoding: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(f4), show: [8, 9],
   side: [
     {
-      type: 'table', id: 'onehot', title: 'one-hot: a 1 in its own column', tone: 'store', columns: ['area', ...names.map((n) => n.replace('area_', ''))],
+      type: 'table', id: 'onehot', title: 'one-hot: a 1 in its own column', tone: 'store', columns: ['area', ...names.map((n) => n.replace('area_', '').slice(0, 4))],
       rows: onehot.rows.map((r) => ({ cells: [r[0], ...r.slice(1).map((v) => v.replace('.0', ''))] })),
     },
     {
-      type: 'table', id: 'why-not', title: 'why not number the areas 1–5?', tone: 'consume', columns: ['as numbers', 'the model would read'], rows: [
-        ['Eastfield = 1, Riverside = 5', 'Riverside is 5 × Eastfield'],
-        ['Hillcrest = 2', 'between 1 and 3, in order'],
+      type: 'group', id: 'why-not', title: 'why not number the areas 1–5?', icon: 'search', tone: 'consume', children: [
+        { type: 'item', id: 'wn-5', title: 'Eastfield = 1, Riverside = 5', sub: 'the model would read: Riverside is 5 × Eastfield', icon: 'zap', tone: 'consume' },
+        { type: 'item', id: 'wn-2', title: 'Hillcrest = 2', sub: 'the model would read: between 1 and 3, in order', icon: 'zap', tone: 'consume' },
+        { type: 'item', id: 'wn-oh', title: `one-hot: ${names.length} columns of 0 or 1`, sub: 'no order, no distance: just "is it this area?"', icon: 'check', tone: 'store' },
       ],
     },
-    {
-      type: 'table', id: 'options', title: 'the encoder, as used here', tone: 'ingest', columns: ['setting', 'means'], rows: [
-        ['fit on X_train', 'learns the five areas'],
-        ['handle_unknown="error"', 'a new area fails loudly'],
-        ['sparse_output=False', 'a plain array'],
-      ],
-    },
-    { type: 'note', id: 'enc-note', tone: 'store', text: `${names.length} areas become ${names.length} columns, each 0 or 1. No order, no distance: just "is it this area?"` },
   ],
 })
 
@@ -153,25 +140,17 @@ export const featuresScaling: SceneModel = notebookFrame({
   side: [
     {
       type: 'group', id: 'fit-apply', title: 'fit on train, apply to both', icon: 'workflow', tone: 'ingest', children: [
-        { type: 'item', id: 'fa-fit', title: '.fit(X_train)', sub: `learns: sqft ${meanSqft} ± ${sdSqft}, built ${meanBuilt} ± ${sdBuilt}`, chip: true },
-        { type: 'item', id: 'fa-apply', title: '.transform(X_test)', sub: '(value − train mean) ÷ train std', chip: true },
+        { type: 'item', id: 'fa-fit', title: '.fit(X_train)', sub: `learns: sqft ${meanSqft} ± ${sdSqft}, built ${meanBuilt} ± ${sdBuilt}`, icon: 'brain' },
+        { type: 'item', id: 'fa-apply', title: '.transform(X_test)', sub: '(value − train mean) ÷ train std', icon: 'zap' },
+        { type: 'item', id: 'fa-why', title: 'test: near 0 and 1, not exactly', sub: 'right: the scaler knows only the training rows', icon: 'check', tone: 'store' },
       ],
     },
     {
       type: 'table', id: 'test-after', title: 'the TEST set, after scaling', tone: 'store', columns: ['', 'sqft', 'built'],
       rows: testScaled.rows.map((r) => ({ cells: r })),
     },
-    {
-      type: 'table', id: 'worked', title: 'one house, scaled by hand', tone: 'store', columns: ['', 'sqft'], rows: [
-        ['value', '2,000'],
-        ['− train mean', `− ${meanSqft}`],
-        ['÷ train std', `÷ ${sdSqft}`],
-        { cells: ['= scaled', ((2000 - meanSqft) / sdSqft).toFixed(2)], tone: 'store' },
-      ],
-    },
-    { type: 'note', id: 'scale-note', tone: 'ingest', text: 'Not exactly 0 and 1 on test, and that is right: the scaler knows only the training rows. Fit it on all rows and the test set has leaked in.' },
   ],
-  edges: [{ from: 'fa-fit', to: 'fa-apply' }],
+  edges: [{ from: 'fa-fit', to: 'fa-apply' }, { from: 'fa-apply', to: 'fa-why' }],
 })
 
 // §8.6 — the pipeline: every step above, in one object that fits on train only.
@@ -180,7 +159,8 @@ export const featuresPipeline: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(f6), show: [12, 13], view: { 12: { head: 3, tail: 1 }, 13: { head: 3, tail: 2 } },
   side: [
     {
-      type: 'group', id: 'ct', title: 'ColumnTransformer: prepare', icon: 'workflow', tone: 'ingest', dir: 'row', children: [
+      type: 'group', id: 'ct', title: 'ColumnTransformer: prepare', icon: 'workflow', tone: 'ingest', children: [
+      { type: 'group', id: 'ct-cols', bare: true, dir: 'row', children: [
         {
           type: 'group', id: 'ct-num', title: 'six numbers', tone: 'store', children: [
             { type: 'item', id: 'ct-imp', title: 'SimpleImputer', sub: 'fills missing built with the median', chip: true },
@@ -192,19 +172,19 @@ export const featuresPipeline: SceneModel = notebookFrame({
             { type: 'item', id: 'ct-oh', title: 'OneHotEncoder', sub: 'five 0/1 columns', chip: true },
           ],
         },
+      ] },
+      { type: 'item', id: 'ct-out', title: `${rows.toLocaleString('en-GB')} rows × ${cols} columns, ready`, sub: '6 scaled numbers + 5 area columns', icon: 'table' },
       ],
     },
-    { type: 'item', id: 'ct-out', title: `${rows.toLocaleString('en-GB')} rows × ${cols} columns, ready`, sub: '6 scaled numbers + 5 area columns', icon: 'table' },
     {
-      type: 'table', id: 'fit-transform', title: 'fit and transform', tone: 'ingest', columns: ['step', '.fit() learns', '.transform() does'], rows: [
-        ['SimpleImputer', 'each column\'s median', 'fills gaps with it'],
-        ['StandardScaler', 'means and stds', 'rescales'],
-        ['OneHotEncoder', 'the five areas', 'writes 0/1 columns'],
+      type: 'table', id: 'fit-transform', title: 'fit and transform', tone: 'ingest', columns: ['step', '.fit() learns → .transform()'], rows: [
+        ['SimpleImputer', 'medians → fills gaps'],
+        ['StandardScaler', 'means, stds → rescales'],
+        ['OneHotEncoder', 'the 5 areas → 0/1 columns'],
       ],
     },
-    { type: 'note', id: 'pipe-note', tone: 'store', text: 'One object: fit() learns every step from the training rows, transform() applies them to any rows. No step can peek at the test set.' },
   ],
-  edges: [{ from: 'ct-imp', to: 'ct-sc' }],
+  edges: [{ from: 'ct-imp', to: 'ct-sc' }, { from: 'ct-sc', to: 'ct-out' }, { from: 'ct-oh', to: 'ct-out' }],
 })
 
 export const featuresScenes: Record<string, SceneModel> = {
