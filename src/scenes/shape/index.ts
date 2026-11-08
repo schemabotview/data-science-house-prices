@@ -1,4 +1,5 @@
 import type { SceneModel } from '@graphlearning/graphl-flow'
+import { SIDE_PLOT_W } from '../grid'
 import { notebookFrame, outputOf, seriesOf, textOf, type Cell } from '../notebook'
 import { tree } from '../tree'
 import g1 from '../../../spine/shape/01-groupby/cells.json'
@@ -37,20 +38,12 @@ export const shapeGroupby: SceneModel = notebookFrame({
       ],
     },
     {
-      type: 'code', id: 'gb-loop', filename: 'the same, as a loop you would write', lang: 'python', code: [
-        'medians = {}',
-        'for area, group in homes.groupby("area"):',
-        '    medians[area] = group["price"].median()',
-      ].join('\n'),
-    },
-    {
       type: 'table', id: 'apply', title: 'the apply step can be any summary', tone: 'ingest', columns: ['…["price"]', 'gives, per area'], rows: [
         ['.median()', 'the middle price'],
         ['.size()', 'how many sales'],
         ['.max()', 'the dearest sale'],
       ],
     },
-    { type: 'note', id: 'gb-note', tone: 'consume', text: 'Six groups, not five: "Old town" is still its own area. groupby trusts the spelling, exactly like ==.' },
   ],
   edges: medians.map(([a]) => ({ from: `split.${id(a)}`, to: `combined.${id(a)}` })),
 })
@@ -61,25 +54,16 @@ export const shapeAgg: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(g2), show: [3],
   side: [
     {
-      type: 'table', id: 'per-sqft', title: 'median £ per sq ft, by area', tone: 'store', columns: ['area', '£/sq ft', ''],
-      rows: agg.rows.map((r) => ({ cells: [r[0], r[3].replace('.0', ''), '█'.repeat(Math.round(Number(r[3]) / 20))], tone: r[0] === 'Riverside' ? 'store' as const : undefined })),
-    },
-    {
-      type: 'table', id: 'named', title: 'a named aggregation', tone: 'ingest', columns: ['new column', '= (column', 'function)'], rows: [
-        ['sales', '"price"', '"size"'],
-        ['median_price', '"price"', '"median"'],
-        ['median_per_sqft', '"per_sqft"', '"median"'],
+      type: 'group', id: 'named', title: '.agg(name=(column, function))', icon: 'table', tone: 'ingest', children: [
+        { type: 'item', id: 'n-sales', title: 'sales', sub: '= ("price", "size"): how many', icon: 'layers' },
+        { type: 'item', id: 'n-median', title: 'median_price', sub: '= ("price", "median")', icon: 'chart' },
+        { type: 'item', id: 'n-sqft', title: 'median_per_sqft', sub: '= ("per_sqft", "median"): price ÷ sqft, now a number', icon: 'chart', tone: 'store' },
       ],
     },
     {
-      type: 'table', id: 'ranks', title: 'rank by price, and by price per sq ft', tone: 'ingest', columns: ['area', 'by price', 'by £/sq ft'],
-      rows: (() => {
-        const byPrice = [...agg.rows].sort((a, b) => Number(b[2]) - Number(a[2])).map((r) => r[0])
-        const bySqft = [...agg.rows].sort((a, b) => Number(b[3]) - Number(a[3])).map((r) => r[0])
-        return agg.rows.map((r) => ({ cells: [r[0], String(byPrice.indexOf(r[0]) + 1), String(bySqft.indexOf(r[0]) + 1)] }))
-      })(),
+      type: 'table', id: 'per-sqft', title: 'median £ per sq ft, by area', tone: 'store', columns: ['area', '£/sq ft', ''],
+      rows: agg.rows.map((r) => ({ cells: [r[0], r[3].replace('.0', ''), '█'.repeat(Math.round(Number(r[3]) / 20))], tone: r[0] === 'Riverside' ? 'store' as const : undefined })),
     },
-    { type: 'note', id: 'agg-note', tone: 'store', text: 'per_sqft works now: price became a number in Course 4. Riverside costs the most per square foot, not just per house.' },
   ],
 })
 
@@ -99,7 +83,7 @@ export const shapePivot: SceneModel = notebookFrame({
       ],
     },
     {
-      type: 'plot', id: 'by-beds', compact: true, title: 'median price (£k) by bedrooms', tone: 'store',
+      type: 'plot', id: 'by-beds', compact: true, w: SIDE_PLOT_W, title: 'median price (£k) by bedrooms', tone: 'store',
       x: { min: 1, max: 6, step: 1, label: 'beds' }, y: { min: 100, max: 500, step: 100 },
       series: [{ kind: 'line', label: 'Riverside', points: line('Riverside') }, { kind: 'line', label: 'Eastfield', points: line('Eastfield') }],
     },
@@ -111,7 +95,7 @@ const merged = seriesOf(textOf(C(g4), 6))
 const areas = outputOf(C(g4), 5).table!
 const homeKeys = ['Riverside', 'Old Town', 'Old town']
 export const shapeMerge: SceneModel = notebookFrame({
-  tree: tree({ ...withAreas, fresh: ['data/areas.csv'] }), file: FILE, cells: C(g4), show: [5, 6, 7, 9],
+  tree: tree({ ...withAreas, fresh: ['data/areas.csv'] }), file: FILE, cells: C(g4), show: [5, 6, 7, 9], view: { 5: { rows: 1 }, 6: { head: 3 } },
   side: [
     {
       type: 'group', id: 'keys', title: 'joining on area', icon: 'key', tone: 'ingest', dir: 'row', children: [
@@ -123,7 +107,6 @@ export const shapeMerge: SceneModel = notebookFrame({
       type: 'table', id: 'indicator', title: 'indicator=True: where each row came from', tone: 'store', columns: ['_merge', 'rows'],
       rows: merged.map(([m, n]) => ({ cells: [m, n], tone: m === 'left_only' && n !== '0' ? 'consume' as const : undefined })),
     },
-    { type: 'note', id: 'merge-note', tone: 'store', text: 'validate="many_to_one" checks each area appears once in areas; indicator finds the rows that matched nothing. .str.title() fixes the spelling.' },
   ],
   edges: [{ from: 'hk.Riverside', to: 'ak.Riverside' }, { from: 'hk.OldTown', to: 'ak.OldTown' }],
 })
@@ -181,7 +164,7 @@ export const shapeTime: SceneModel = notebookFrame({
   tree: tree(withAreas), file: FILE, cells: C(g6), show: [10, 11], view: { 10: { rows: 6 } },
   side: [
     {
-      type: 'plot', id: 'trend', compact: true, title: 'median price (£k): each quarter, and rolling', tone: 'store',
+      type: 'plot', id: 'trend', compact: true, w: SIDE_PLOT_W, title: 'median price (£k): each quarter, and rolling', tone: 'store',
       x: { min: 2020.75, max: 2027, step: 1 }, y: { min: 200, max: 320, step: 40 },
       series: [
         { kind: 'line', points: trend.rows.map((r) => [quarter(r[0]), Number(r[1]) / 1000]) },
@@ -190,9 +173,9 @@ export const shapeTime: SceneModel = notebookFrame({
     },
     {
       type: 'table', id: 'resample', title: 'two time tools', tone: 'ingest', columns: ['call', 'does'], rows: [
-        ['.resample("QS")', 'one row per quarter, by date'],
-        ['.rolling(4).mean()', 'average of the last four'],
-        { cells: ['rolling: first → last', `+${(growth * 100).toFixed(1)}%`], tone: 'store' },
+        ['.resample("QS")', 'a row per quarter'],
+        ['.rolling(4).mean()', 'mean of the last 4'],
+        { cells: ['first → last', `+${(growth * 100).toFixed(1)}%`], tone: 'store' },
       ],
     },
   ],
@@ -206,21 +189,17 @@ export const shapeLongWide: SceneModel = notebookFrame({
   tree: tree(withAreas), file: FILE, cells: C(g7), show: [12, 13, 14],
   side: [
     {
-      type: 'table', id: 'wide-x', title: `wide ${wideShape}: a column per area`, tone: 'ingest', columns: ['sold', ...wide.columns.slice(0, 3), '…'],
-      rows: wide.rows.slice(0, 3).map((r) => [r[0], ...r.slice(1, 4).map(k), '…']),
-    },
+      type: 'group', id: 'lw', title: 'the same numbers, two shapes', icon: 'table', tone: 'ingest', children: [
     {
-      type: 'table', id: 'long-x', title: `long ${longShape}: a row per (year, area)`, tone: 'store', columns: long.columns,
-      rows: long.rows.slice(0, 3).map((r) => [r[1], r[2], k(r[3])]),
-    },
-    {
-      type: 'table', id: 'melt-args', title: '.melt(id_vars="sold", value_name="median")', tone: 'ingest', columns: ['part', 'becomes'], rows: [
-        ['id_vars="sold"', 'kept: repeated on every row'],
-        ['each other column\'s name', 'a value in "area"'],
-        ['each cell', 'a value in "median"'],
+        type: 'table', id: 'wide-x', title: `wide ${wideShape}: a column per area`, tone: 'ingest', columns: ['sold', ...wide.columns.slice(0, 3), '…'],
+        rows: wide.rows.slice(0, 3).map((r) => [r[0], ...r.slice(1, 4).map(k), '…']),
+      },
+      {
+        type: 'table', id: 'long-x', title: `long ${longShape}: a row per (year, area)`, tone: 'store', columns: long.columns,
+        rows: long.rows.slice(0, 3).map((r) => [r[1], r[2], k(r[3])]),
+      },
       ],
     },
-    { type: 'note', id: 'lw-note', tone: 'ingest', text: 'Wide reads well as a table. Long is what groupby, plots and models want. .melt() goes wide → long, .pivot() back.' },
   ],
   edges: [{ from: 'wide-x', to: 'long-x', label: '.melt(id_vars="sold")' }],
 })
