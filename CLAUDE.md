@@ -73,11 +73,13 @@ Course 11's steps are terminal sessions (pip, pytest, the command, uvicorn + cur
   plot — check-content). No explorer. Figures in cells draw `compact` at the notebook's width. Cells come from cells.json: `show` picks cells (the rest fold to
   `··· N cells above`), `view` tints lines and clips long text / DataFrame rows. A DataFrame output
   is a `table` parsed from pandas' own HTML.
-- **IDE frame** (`src/scenes/ide.ts`, the expense tracker's): 2.1 and Course 11.
+- **IDE frame v2** (`src/scenes/ide.ts`, the expense tracker's frame v2): 2.1 and Course 11. Compact
+  explorer 175 | editor over a 72-column terminal sharing 26 rows | side pane 434. `ideFrame` THROWS,
+  naming the file, when a transcript or the shown ranges do not fit; `fold.ts` `view()` names the region.
 - Both side panes `spread` their blocks over the full height; check-render's fill rule is the blocks'
   own height ≥ 50% of the pane (add real content, never padding).
-- **2026-11-08: Course 6 `see` is on frame v2 (the pilot); the other courses are NOT yet ported and
-  fail the checks until they are.** `node scripts/check-render.mjs <course>` checks one course.
+- **2026-11-08: every course is on frame v2**; the recorded videos and the film are v1 and are
+  re-recorded. `node scripts/check-render.mjs <course>` checks one course.
 - Both are 1344 × 756 (v1: 1736 wide): check-render asserts every framed section is on ONE fit, and each pane
   at the same pixels as the first frame of its kind, and that no pane's content runs past it, and
   that no plot text overlaps other plot text (six category labels once ran into one word).

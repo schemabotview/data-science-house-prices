@@ -337,6 +337,10 @@ draw `compact` (280px high) at the notebook's width; cell inputs soft-wrap as Ju
 cell's view may fold input lines (`show`) or DataFrame rows (`rows`) that the frame's height cannot
 hold and the side pane already carries.
 
-Piloted on Course 6 `see` (owner review pending), then the other courses; every course is
-re-recorded once all are ported. Narration edited for v2: none so far.
+Piloted on Course 6 `see`, then ported to every course (2026-11-08): all 71 sections, 62 framed
+sections on one fit. The IDE frame (2.1, Course 11) is python-expense-tracker's frame v2: compact
+explorer 175 | editor over a 72-column terminal (the divider moves with the transcript) | side pane
+434. Concept scenes were laid out across the frame so they scale up (1.1, 11.7). Checks added: plot
+labels on one line may not touch (7.2's axis read "230235240…"), and a `show` range must run forwards.
+Narration edited for v2: none. Every course is re-recorded, because the frame changed.
 

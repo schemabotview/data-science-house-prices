@@ -137,7 +137,8 @@ try {
         if (!a || !z) continue // graphl-flow has already logged a console error for it
         if (!ps.every((q, i) => i === 0 || q.x === ps[i - 1].x || q.y === ps[i - 1].y)) out.push(`${tag} is not orthogonal`)
         if (!onFace(ps[0], R(a)) || !onFace(ps.at(-1), R(z))) out.push(`${tag} ends off its node's face`)
-        if (len(ps) < 24 - 0.01) out.push(`${tag} is shorter than 24px`)
+        // 0.05: a nominal 24px gap measures 23.985 through the fit's floats
+        if (len(ps) < 24 - 0.05) out.push(`${tag} is shorter than 24px`)
         // The DRAWN shaft (`d`, trimmed short of each head by graphl-flow's HEAD_TRIM) must run the same
         // way as the route at both ends. A final run shorter than the trim reverses it and the arrowhead
         // flips: three edges converging through one 32px gap left a 4px last run, and one arrow pointed

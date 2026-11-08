@@ -20,19 +20,15 @@ const head = outputOf(first as Cell[], 2).table!
 export const setupFirstCells: SceneModel = notebookFrame({
   tree: tree({ active: FILE, fresh: [FILE] }), file: FILE, cells: first as Cell[],
   side: [
-    { type: 'code', id: 'csv', filename: 'data/homes.csv — the first 4 of 1,461 lines', lang: 'text', code: csvLines.slice(0, 4).join('\n'), highlight: [1] },
     {
-      type: 'table', id: 'frame', title: 'homes — the same lines, as a DataFrame', tone: 'store',
-      columns: ['index', ...head.columns.slice(0, 4), '…'], rows: head.rows.slice(0, 3).map((r) => ({ id: `r${r[0]}`, cells: [...r.slice(0, 5), '…'] })),
-    },
-    {
-      type: 'table', id: 'shape', title: `homes.shape = ${textOf(first as Cell[], 1)}`, tone: 'ingest', columns: ['the file', 'the DataFrame'], rows: [
-        ['the header line', 'the column names'],
-        ['each other line', 'one row'],
-        ['(no row numbers)', 'an index: 0, 1, 2, …'],
+      type: 'group', id: 'read', title: `pd.read_csv: homes.shape = ${textOf(first as Cell[], 1)}`, icon: 'table', tone: 'ingest', children: [
+        { type: 'code', id: 'csv', filename: 'data/homes.csv — the first 4 of 1,461 lines', lang: 'text', wrap: true, code: csvLines.slice(0, 4).join('\n'), highlight: [1] },
+        {
+          type: 'table', id: 'frame', title: 'homes — the same lines, as a DataFrame', tone: 'store',
+          columns: ['', ...head.columns.slice(0, 3), '…'], rows: head.rows.slice(0, 3).map((r) => ({ id: `r${r[0]}`, cells: [...r.slice(0, 4), '…'] })),
+        },
       ],
     },
-    { type: 'note', id: 'first-note', tone: 'consume', text: 'Already visible in five rows: a date written day-first, NaN for a missing garage, a year printed as 1961.0.' },
   ],
   edges: [{ from: 'csv', to: 'frame', label: 'pd.read_csv' }],
 })
@@ -44,14 +40,14 @@ const info = textOf(anatomy as Cell[], 3, 'stream')
 const dtypeOf = (col: string) => new RegExp(`^\\s*\\d+\\s+${col}\\s+\\d+ non-null\\s+(\\S+)`, 'm').exec(info)![1]
 const series = (col: string) => ({
   type: 'table' as const, id: `s-${col}`, title: `${col} · ${dtypeOf(col)}`, tone: (dtypeOf(col) === 'str' ? 'consume' : 'store') as 'consume' | 'store',
-  rows: [...head.rows.slice(0, 3).map((r) => [r[head.columns.indexOf(col) + 1]]), ['…']],
+  rows: [...head.rows.slice(0, 4).map((r) => [r[head.columns.indexOf(col) + 1]]), ['…']],
 })
 export const setupDataframe: SceneModel = notebookFrame({
   tree: tree({ active: FILE }), file: FILE, cells: anatomy as Cell[], show: [3, 4],
   side: [
     {
       type: 'group', id: 'anatomy', title: 'homes: one index, ten Series', icon: 'table', tone: 'ingest', dir: 'row', children: [
-        { type: 'table', id: 'index', title: 'index', rows: [['0'], ['1'], ['2'], ['…']] },
+        { type: 'table', id: 'index', title: 'index', rows: [['0'], ['1'], ['2'], ['3'], ['…']] },
         series('sqft'),
         series('area'),
         series('price'),
@@ -64,13 +60,6 @@ export const setupDataframe: SceneModel = notebookFrame({
         { cells: ['str', 'sold, agent, area, price'], tone: 'consume' },
       ],
     },
-    {
-      type: 'group', id: 'select', title: 'prices = homes["price"]', icon: 'filter', tone: 'consume', dir: 'row', children: [
-        { type: 'item', id: 'sel-what', title: 'one column out', sub: textOf(anatomy as Cell[], 4).split(', <')[0].replace('(', '') + ': values + the same index', icon: 'table' },
-        { type: 'item', id: 'sel-dtype', title: 'dtype: str', sub: 'text, so no sum, no mean', icon: 'key' },
-      ],
-    },
-    { type: 'note', id: 'price-note', tone: 'consume', text: 'price is text: one agent wrote "£215,000". One bad value makes a whole column a string.' },
   ],
 })
 
@@ -98,7 +87,6 @@ export const setupStale: SceneModel = notebookFrame({
         { cells: ['Restart & Run All', freshLen], tone: 'store' },
       ],
     },
-    { type: 'note', id: 'rule', tone: 'store', text: 'Before you trust or share a notebook: Kernel → Restart Kernel and Run All Cells. The counts should read 1, 2, 3 …' },
   ],
   edges: [{ from: 'h5', to: 'h6' }, { from: 'h6', to: 'hedit' }, { from: 'hedit', to: 'h7' }],
 })
@@ -137,7 +125,6 @@ export const setupNumpy: SceneModel = notebookFrame({
         { cells: ['the NumPy array', vec], tone: 'store' },
       ],
     },
-    { type: 'note', id: 'np-note', tone: 'store', text: 'pandas columns are NumPy arrays underneath: work on whole columns, never loop over rows.' },
   ],
   edges: [0, 1, 2].map((i) => ({ from: `p${i}`, to: `o${i}` })),
 })

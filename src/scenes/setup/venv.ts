@@ -30,19 +30,12 @@ export const setupVenv: SceneModel = ideFrame({
       ],
     },
     {
-      type: 'table', id: 'why', title: 'Why pinned', tone: 'ingest', columns: ['without a pin', 'with one'], rows: [
-        ['a later install gets a newer pandas', `pandas==${pandas}, every time`],
-        ['outputs change under you', 'every number here replays'],
-      ],
-    },
-    {
       type: 'table', id: 'folder', title: 'house-prices/, after these commands', tone: 'store', columns: ['entry', 'what it is'], rows: [
-        ['data/homes.csv', 'the sales: given, never edited'],
-        ['pyproject.toml', 'the project and its pinned tools'],
-        { cells: ['.venv/', "its own Python: made here"], tone: 'store' },
+        ['data/homes.csv', 'the sales, never edited'],
+        ['pyproject.toml', 'project, pinned tools'],
+        { cells: ['.venv/', 'its own Python'], tone: 'store' },
       ],
     },
-    { type: 'note', id: 'venv-note', tone: 'store', text: 'A group is a named list of tools. The project is not a package yet: that comes in the last course.' },
   ],
   edges: [{ from: 'toml', to: 'site', label: 'pip reads the group' }],
 })

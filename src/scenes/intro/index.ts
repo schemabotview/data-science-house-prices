@@ -16,13 +16,17 @@ export const introDataScience: SceneModel = {
   sub: 'turning data into an answer you can trust, and then into something people can use',
   nodes: [
     {
-      type: 'group', id: 'steps', bare: true, dir: 'row', children: [
+      type: 'group', id: 'steps', bare: true, children: [
+        { type: 'group', id: 'row1', bare: true, dir: 'row', children: [
         step('q', 1, 'A question', 'what is this house worth?', 'search', 'Course 1', 'source'),
         step('d', 2, 'The data', 'a CSV of sales, in a notebook', 'table', 'Courses 2–3', 'ingest'),
         step('c', 3, 'Clean it', 'find every fault, fix it, write it down', 'filter', 'Course 4', 'ingest'),
+        ] },
+        { type: 'group', id: 'row2', bare: true, dir: 'row', children: [
         step('e', 4, 'Explore it', 'group, join, draw, measure', 'chart', 'Courses 5–7', 'ingest'),
         step('m', 5, 'Model it', 'predict, and say how sure', 'cpu', 'Courses 8–10', 'store'),
         step('s', 6, 'Ship it', 'a package, a command, an API', 'package', 'Course 11', 'serve'),
+        ] },
       ],
     },
     {
@@ -36,7 +40,7 @@ export const introDataScience: SceneModel = {
       ],
     },
   ],
-  edges: [{ from: 'q', to: 'd' }, { from: 'd', to: 'c' }, { from: 'c', to: 'e' }, { from: 'e', to: 'm' }, { from: 'm', to: 's' }],
+  edges: [{ from: 'q', to: 'd' }, { from: 'd', to: 'c' }, { from: 'e', to: 'm' }, { from: 'm', to: 's' }],
 }
 
 // §1.2 — what we'll build: from the raw file to a valuation with its range, and a refusal.
@@ -63,8 +67,8 @@ export const introWhatWeBuild: SceneModel = {
     },
     {
       type: 'group', id: 'end', title: 'It ends here', icon: 'terminal', tone: 'store', children: [
-        { type: 'code', id: 'cmd', terminal: true, filename: 'the house-prices command', code: [...asked, ...refusal].join('\n').replace(/^(house-prices: .*)$/m, '! $1') },
-        { type: 'code', id: 'api', terminal: true, filename: 'the web service: POST /value', code: reply },
+        { type: 'code', id: 'cmd', terminal: true, w: 640, filename: 'the house-prices command', code: [...asked, ...refusal].flatMap((l) => l.match(/.{1,64}/g) ?? ['']).join('\n').replace(/^(house-prices: .*)$/m, '! $1') },
+        { type: 'code', id: 'api', terminal: true, w: 640, filename: 'the web service: POST /value', code: reply },
       ],
     },
   ],
