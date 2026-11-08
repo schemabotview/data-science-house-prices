@@ -14,7 +14,7 @@ export interface TreeState {
   extra?: TreeEntry[]
 }
 
-export const venv: TreeEntry = { name: '.venv', folder: true, state: 'muted', note: "this project's Python" }
+export const venv: TreeEntry = { name: '.venv', folder: true, state: 'muted' }
 
 export function tree({ active, fresh = [], notebooks = ['explore.ipynb'], data = ['homes.csv'], extra = [] }: TreeState): TreeEntry[] {
   const mark = (path: string, name: string): TreeEntry => ({

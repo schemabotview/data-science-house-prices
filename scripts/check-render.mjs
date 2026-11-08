@@ -250,7 +250,9 @@ const [ref] = ide
 for (const { slug, frame, panes, fit } of ide.slice(1)) {
   if (fit !== ref.fit) problems.push(`${slug}  fit ${fit} differs from ${ref.slug}'s ${ref.fit} — a framed section must not change the zoom`)
   const kin = ide.find((f) => f.frame === frame)
-  for (const pane of Object.keys(kin.panes)) {
+  // Frame v2: the editor/terminal divider moves with the transcript by design; the explorer, the
+  // notebook and the side pane never do.
+  for (const pane of Object.keys(kin.panes).filter((p) => p !== 'editor' && p !== 'terminal')) {
     const a = kin.panes[pane], b = panes[pane]
     if (!a || !b || a.some((v, i) => v !== b[i])) problems.push(`${slug}  the ${pane} pane is at [${b}], not [${a}] as in ${kin.slug}`)
   }
