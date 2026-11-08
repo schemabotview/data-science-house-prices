@@ -1,4 +1,5 @@
 import type { SceneModel } from '@graphlearning/graphl-flow'
+import { SIDE_PLOT_W } from '../grid'
 import { notebookFrame, num, outputOf, seriesOf, textOf, type Cell } from '../notebook'
 import { tree } from '../tree'
 import s1 from '../../../spine/select/01-loc/cells.json'
@@ -28,19 +29,12 @@ export const selectLoc: SceneModel = notebookFrame({
       rows: head3.rows.map((r, i) => ({ id: `r${i}`, cells: [r[0], String(i), ...r.slice(1)], tone: i === 2 ? 'store' as const : undefined })),
     },
     {
-      type: 'table', id: 'two-ways', title: 'one cell, asked two ways', tone: 'store', columns: ['asked', 'by', 'gives'], rows: [
-        ['homes.loc[2, "area"]', 'label, name', textOf(C(s1), 3)],
-        ['homes.iloc[2, 3]', 'position', textOf(C(s1), 4)],
+      type: 'group', id: 'two-ways', title: 'one cell, asked two ways', icon: 'search', tone: 'store', children: [
+        { type: 'item', id: 'by-label', title: 'homes.loc[2, "area"]', sub: `by the row's label, 2, and the column's name: ${textOf(C(s1), 3)}`, icon: 'table' },
+        { type: 'item', id: 'by-pos', title: 'homes.iloc[2, 3]', sub: `by the 3rd row and the 4th column, counted from 0: ${textOf(C(s1), 4)}`, icon: 'layers' },
+        { type: 'item', id: 'agree', title: 'the same, for now', sub: 'labels are 0, 1, 2 … in order until a sort moves rows (§3.3)', icon: 'check', tone: 'store' },
       ],
     },
-    {
-      type: 'table', id: 'shapes', title: 'what square brackets give back', tone: 'ingest', columns: ['you write', 'you get'], rows: [
-        ['homes["area"]', 'a Series: one column'],
-        ['homes[["area", "sqft"]]', 'a DataFrame: those columns'],
-        ['homes.loc[2, "area"]', 'one value'],
-      ],
-    },
-    { type: 'note', id: 'loc-note', tone: 'ingest', text: 'They agree only while the labels are 0, 1, 2 … in order. Sorting breaks that, in two sections.' },
   ],
 })
 
@@ -52,25 +46,22 @@ export const selectMasks: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(s2), show: [5, 6, 7],
   side: [
     {
-      type: 'group', id: 'masking', title: 'homes[mask]: keep the True rows', icon: 'filter', tone: 'ingest', dir: 'row', children: [
-        { type: 'table', id: 'areas', title: 'area', rows: head3.rows.map((r) => ({ id: `a${r[0]}`, cells: [r[1]] })) },
-        { type: 'table', id: 'mask', title: '== "Riverside"', rows: mask.map(([k, v]) => ({ id: `m${k}`, cells: [v], tone: v === 'True' ? 'store' as const : undefined })) },
+      type: 'group', id: 'masking', title: 'homes[mask]: keep the True rows', icon: 'filter', tone: 'ingest', children: [
+        { type: 'group', id: 'lineup', bare: true, dir: 'row', children: [
+          { type: 'table', id: 'areas', title: 'area', rows: head3.rows.map((r) => ({ id: `a${r[0]}`, cells: [r[1]] })) },
+          { type: 'table', id: 'mask', title: '== "Riverside"', rows: mask.map(([k, v]) => ({ id: `m${k}`, cells: [v], tone: v === 'True' ? 'store' as const : undefined })) },
+        ] },
+        { type: 'item', id: 'sum', title: `riverside.sum(): ${riverside}`, sub: 'True counts as 1 — not every Riverside: "Riverside " has a space', icon: 'check', tone: 'store' },
+        { type: 'item', id: 'big', title: `riverside & (sqft > 2000): ${kept}`, sub: 'two masks, one pair of brackets each', icon: 'filter' },
       ],
     },
     {
-      type: 'table', id: 'counts', title: 'what the masks found', tone: 'store', columns: ['asked', 'answer'], rows: [
-        ['riverside.sum()  (True counts as 1)', String(riverside)],
-        ['riverside & (sqft > 2000) → shape', kept],
-      ],
-    },
-    {
-      type: 'table', id: 'ops', title: 'combining masks: one pair of brackets each', tone: 'ingest', columns: ['operator', 'means', 'example'], rows: [
+      type: 'table', id: 'ops', title: 'combining masks', tone: 'ingest', columns: ['operator', 'means', 'example'], rows: [
         ['&', 'and', 'riverside & big'],
         ['|', 'or', 'riverside | old_town'],
         ['~', 'not', '~riverside'],
       ],
     },
-    { type: 'note', id: 'mask-note', tone: 'consume', text: `${riverside} is not every Riverside sale: some are spelled "Riverside " with a space, and == is exact. §3.5 finds them.` },
   ],
   edges: head3.rows.map((r) => ({ from: `areas.a${r[0]}`, to: `mask.m${r[0]}` })),
 })
@@ -86,18 +77,11 @@ export const selectSorting: SceneModel = notebookFrame({
       rows: top.rows.map((r, i) => ({ id: `t${i}`, cells: [String(i), r[0], r[1], r[2]], tone: r[0] === '1' ? 'store' as const : i === 1 ? 'infra' as const : undefined })),
     },
     {
-      type: 'table', id: 'disagree', title: 'now they disagree', tone: 'store', columns: ['asked', 'gives'], rows: [
-        { cells: ['top.loc[1, "area"]  (label 1)', byLabel], tone: 'store' },
-        { cells: ['top.iloc[1]["area"]  (2nd row)', byPosition], tone: 'infra' },
+      type: 'group', id: 'disagree', title: 'now .loc and .iloc disagree', icon: 'search', tone: 'store', children: [
+        { type: 'item', id: 'd-label', title: 'top.loc[1, "area"]', sub: `the row labelled 1, wherever it is now: ${byLabel}`, icon: 'table', tone: 'store' },
+        { type: 'item', id: 'd-pos', title: 'top.iloc[1]["area"]', sub: `whatever row is 2nd now: ${byPosition}`, icon: 'layers', tone: 'infra' },
       ],
     },
-    {
-      type: 'table', id: 'ways', title: 'two ways to the same five rows', tone: 'ingest', columns: ['code'], rows: [
-        ['homes.nlargest(5, "sqft")'],
-        ['homes.sort_values("sqft", ascending=False).head(5)'],
-      ],
-    },
-    { type: 'note', id: 'sort-note', tone: 'ingest', text: 'A label belongs to its row and travels with it. Use .loc for "this house", .iloc for "the nth row now".' },
   ],
 })
 
@@ -111,15 +95,12 @@ export const selectNewColumns: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(s4), show: [10, 11],
   side: [
     {
-      type: 'group', id: 'arith', title: 'homes["age"] = 2026 - homes["built"]', icon: 'zap', tone: 'store', dir: 'row', children: [
-        { type: 'table', id: 'built', title: 'built', rows: ages.rows.map((r) => ({ id: `b${r[0]}`, cells: [r[1]] })) },
-        { type: 'table', id: 'age', title: 'age', rows: ages.rows.map((r) => ({ id: `g${r[0]}`, cells: [r[2]] })) },
-      ],
-    },
-    {
-      type: 'table', id: 'nan', title: 'NaN in, NaN out', tone: 'store', columns: ['column', 'missing'], rows: [
-        ['built', String(rowsAll - builtPresent)],
-        ['age = 2026 − built', String(rowsAll - builtPresent)],
+      type: 'group', id: 'arith', title: 'homes["age"] = 2026 - homes["built"]', icon: 'zap', tone: 'store', children: [
+        { type: 'group', id: 'cols', bare: true, dir: 'row', children: [
+          { type: 'table', id: 'built', title: 'built', rows: ages.rows.map((r) => ({ id: `b${r[0]}`, cells: [r[1]] })) },
+          { type: 'table', id: 'age', title: 'age', rows: ages.rows.map((r) => ({ id: `g${r[0]}`, cells: [r[2]] })) },
+        ] },
+        { type: 'item', id: 'nan-io', title: `NaN in, NaN out: ${rowsAll - builtPresent} missing`, sub: 'a missing year gives a missing age; pandas never invents one', icon: 'search' },
       ],
     },
     {
@@ -128,7 +109,6 @@ export const selectNewColumns: SceneModel = notebookFrame({
         { cells: ['price', 'str', 'no: text'], tone: 'consume' },
       ],
     },
-    { type: 'note', id: 'age-note', tone: 'consume', text: `"${err.evalue}". Price per sq ft waits for Course 4, which turns price into numbers.` },
   ],
   edges: ages.rows.map((r) => ({ from: `built.b${r[0]}`, to: `age.g${r[0]}`, label: r === ages.rows[0] ? '2026 −' : undefined })),
 })
@@ -142,7 +122,7 @@ const before = seriesOf(textOf(C(s5), 12)).map(([k, v]) => [spelled(k), v])
 const after = new Map(seriesOf(textOf(C(s5), 13)).map(([k, v]) => [`"${k}"`, v]))
 const [asText, asCategory] = /\((\d+), (\d+)\)/.exec(textOf(C(s5), 14))!.slice(1).map(Number)
 export const selectText: SceneModel = notebookFrame({
-  tree: tree(files), file: FILE, cells: C(s5), show: [12, 13, 14],
+  tree: tree(files), file: FILE, cells: C(s5), show: [12, 13, 14], view: { 12: { head: 4, tail: 3 }, 13: { head: 4, tail: 2 } },
   side: [
     {
       type: 'table', id: 'spellings', title: 'area: before and after .str.strip()', tone: 'ingest', columns: ['spelled', 'before', 'after'],
@@ -152,11 +132,10 @@ export const selectText: SceneModel = notebookFrame({
       })),
     },
     {
-      type: 'plot', id: 'memory', compact: true, title: 'memory for 1,460 areas (bytes)', tone: 'ingest',
+      type: 'plot', id: 'memory', compact: true, w: SIDE_PLOT_W, title: 'memory for 1,460 areas (bytes)', tone: 'ingest',
       x: { labels: ['str', 'category'] }, y: { min: 0, max: 90000, step: 30000 },
       series: [{ kind: 'bar', points: [[0, asText], [1, asCategory]], label: 'bytes' }],
     },
-    { type: 'note', id: 'text-note', tone: 'consume', text: '"Old town" is a different slip, case not space. It stays until a join fails on it (Course 5).' },
   ],
 })
 
@@ -170,17 +149,16 @@ export const selectDates: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(s6), show: [15, 16, 17],
   side: [
     {
-      type: 'table', id: 'parse', title: 'two formats, two parsers, one column', tone: 'ingest', columns: ['sold, as text', 'iso', 'uk', 'fillna'], rows: [
-        [sold[0], sold[0], 'NaT', sold[0]],
-        [sold[1], 'NaT', ukToIso(sold[1]), ukToIso(sold[1])],
+      type: 'table', id: 'parse', title: `${dateErr.ename}, so: two parsers, one column`, tone: 'ingest', columns: ['as text', 'parsed as', 'gives'], rows: [
+        [sold[0], 'ISO', sold[0]],
+        { cells: [sold[1], 'day first', ukToIso(sold[1])], tone: 'store' },
       ],
     },
     {
-      type: 'plot', id: 'per-year', compact: true, title: 'sales per year (2026: to September)', tone: 'store',
+      type: 'plot', id: 'per-year', compact: true, w: SIDE_PLOT_W, title: 'sales per year (2026: to September)', tone: 'store',
       x: { labels: years.map(([y]) => y) }, y: { min: 0, max: 300, step: 100 },
       series: [{ kind: 'bar', points: years.map(([, v], i) => [i, Number(v)]), label: 'sales' }],
     },
-    { type: 'note', id: 'date-note', tone: 'consume', text: `${dateErr.ename}: pandas guessed one format from the first row. Never let it guess dates: ${sold[1].slice(0, 5)} is 8 January here.` },
   ],
 })
 
@@ -193,13 +171,6 @@ export const selectCopyOnWrite: SceneModel = notebookFrame({
         { type: 'item', id: 'ch-demo', title: 'demo', sub: 'the frame you meant to change', icon: 'table' },
         { type: 'item', id: 'ch-copy', title: 'demo[mask]', sub: 'a NEW object: behaves as a copy', icon: 'file' },
         { type: 'item', id: 'ch-set', title: '["beds"] = 2', sub: 'sets the copy, which is thrown away', icon: 'zap' },
-      ],
-    },
-    {
-      type: 'table', id: 'rules', title: 'Copy-on-Write, the whole rule', tone: 'ingest', columns: ['you write', 'what changes'], rows: [
-        { cells: ['df.loc[rows, "col"] = v', 'df'], tone: 'store' },
-        { cells: ['df[rows]["col"] = v', 'nothing (a warning)'], tone: 'consume' },
-        ['sub = df[rows]; sub["col"] = v', 'sub only, never df'],
       ],
     },
     {
