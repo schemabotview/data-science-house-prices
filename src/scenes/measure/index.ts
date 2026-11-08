@@ -1,4 +1,5 @@
 import type { PlotSeries, SceneModel } from '@graphlearning/graphl-flow'
+import { SIDE_PLOT_W } from '../grid'
 import { figurePlot, notebookFrame, num, outputOf, seriesOf, textOf, type Cell } from '../notebook'
 import { tree } from '../tree'
 import m1 from '../../../spine/measure/01-centre/cells.json'
@@ -21,7 +22,6 @@ const fig = (cells: Cell[], n: number) => cells.find((c) => c.cell === n)!.figur
 
 // §7.1 — centre and spread, and what one extreme sale does to each.
 const robust = outputOf(C(m1), 3).table!
-const iqr = num(textOf(C(m1), 2))
 const row = (k: string) => robust.rows.find((r) => r[0] === k)!.slice(1).map(Number)
 export const measureCentre: SceneModel = notebookFrame({
   tree: tree({ ...files, fresh: [FILE] }), file: FILE, cells: C(m1),
@@ -34,7 +34,7 @@ export const measureCentre: SceneModel = notebookFrame({
       }),
     },
     (() => {
-      const h = figurePlot('centres', fig(C(v1), 2), { compact: true, xScale: 1000, tone: 'ingest' })
+      const h = figurePlot('centres', fig(C(v1), 2), { compact: true, w: SIDE_PLOT_W, xScale: 1000, tone: 'ingest' })
       const top = h.y.max!
       const [mean, median] = [row('mean')[0], row('median')[0]].map((v) => v / 1000)
       return { ...h, title: 'prices (£k), from Course 6', series: [...h.series,
@@ -42,13 +42,6 @@ export const measureCentre: SceneModel = notebookFrame({
         { kind: 'segment' as const, from: [mean, 0] as [number, number], to: [mean, top * 0.7] as [number, number], label: 'mean', tone: 'consume' as const, dashed: false },
       ] }
     })(),
-    {
-      type: 'table', id: 'spreads', title: 'two spreads', tone: 'ingest', columns: ['measure', 'value', 'one extreme sale'], rows: [
-        ['std', gbp(row('std')[0]), 'jumps'],
-        { cells: ['IQR (75% − 25%)', gbp(iqr), 'barely moves'], tone: 'store' },
-      ],
-    },
-    { type: 'note', id: 'centre-note', tone: 'store', text: 'The median and the IQR are robust: they describe the typical sale, whatever one mansion costs.' },
   ],
 })
 
@@ -59,18 +52,10 @@ export const measureSamples: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(m2), show: [4, 5],
   side: [
     {
-      type: 'table', id: 'one', title: 'one sample of 100 against all 1,453', tone: 'ingest', columns: ['', 'median'], rows: [
-        ['sample (random_state=1)', gbp(oneSample)],
-        { cells: ['every sale', gbp(everyone)], tone: 'store' },
-        { cells: ['off by', gbp(everyone - oneSample)], tone: 'consume' },
-      ],
+      type: 'table', id: 'thousand', title: 'the median: one sample, all, and 1,000 samples', tone: 'store', columns: ['', ''],
+      rows: [['one sample of 100', gbp(oneSample)], ['all 1,453 sales', gbp(everyone)], ['middle (50%)', gbp(Number(spread.get('50%')))], ['typical miss (std)', gbp(Number(spread.get('std')))], ['range', `${gbp(Number(spread.get('min')))} – ${gbp(Number(spread.get('max')))}`]],
     },
-    {
-      type: 'table', id: 'thousand', title: '1,000 samples of 100: their medians', tone: 'store', columns: ['', ''],
-      rows: [['middle (50%)', gbp(Number(spread.get('50%')))], ['typical miss (std)', gbp(Number(spread.get('std')))], ['range', `${gbp(Number(spread.get('min')))} – ${gbp(Number(spread.get('max')))}`]],
-    },
-    figurePlot('sampling', fig(C(m2), 6), { compact: true, xScale: 1000, tone: 'store' }),
-    { type: 'note', id: 'samples-note', tone: 'ingest', text: 'Every sample gives a different answer. The spread of those answers is how sure one sample can make you.' },
+    figurePlot('sampling', fig(C(m2), 6), { compact: true, w: SIDE_PLOT_W, xStep: 10, xScale: 1000, tone: 'store' }),
   ],
 })
 
@@ -79,7 +64,7 @@ const [nRiver, riverMedian] = nums(textOf(C(m4), 7))
 const ci = seriesOf(textOf(C(m4), 8)).map(([, v]) => Number(v))
 const sci = nums(textOf(C(m4), 10))
 const bootPlot = (id: string, compact: boolean) => {
-  const p = figurePlot(id, fig(C(m4), 9), { compact, xScale: 1000, tone: 'store' })
+  const p = figurePlot(id, fig(C(m4), 9), { compact, w: compact ? SIDE_PLOT_W : undefined, xScale: 1000, tone: 'store' })
   const top = p.y.max!
   const marks: PlotSeries[] = ci.map((v, i) => ({ kind: 'segment', from: [v / 1000, 0], to: [v / 1000, top], label: i ? '97.5%' : '2.5%', tone: 'consume' }))
   return { ...p, series: [...p.series, ...marks] }
@@ -125,7 +110,6 @@ export const measureInterval: SceneModel = notebookFrame({
         ['scipy agrees', `${gbp(sci[0])} – ${gbp(sci[1])}`],
       ],
     },
-    { type: 'note', id: 'ci-note', tone: 'ingest', text: `Say "about £${Math.round(riverMedian / 1000)}k, likely between £${Math.round(ci[0] / 1000)}k and £${Math.round(ci[1] / 1000)}k". The interval is the honest part of the answer.` },
   ],
 })
 
@@ -142,20 +126,13 @@ export const measurePermutation: SceneModel = notebookFrame({
         { type: 'item', id: 'i3', title: '5,000 times: how often ≥ the real gap?', chip: true },
       ],
     },
-    {
-      type: 'table', id: 'test', title: 'the test', tone: 'store', columns: ['', ''], rows: [
-        ['real gap (garage − none)', gbp(observed)],
-        { cells: ['shuffles at least as far out', `${(p * 100).toFixed(2)}%`], tone: 'store' },
-      ],
-    },
-    figurePlot('shuffles', fig(C(m5), 13), { compact: true, xScale: 1000, tone: 'ingest' }),
+    figurePlot('shuffles', fig(C(m5), 13), { compact: true, w: SIDE_PLOT_W, xScale: 1000, tone: 'ingest' }),
   ],
   edges: [{ from: 'i1', to: 'i2' }, { from: 'i2', to: 'i3' }],
 })
 
 
 // §7.6 — p-values, plainly: the same question, on all the data and on 40 sales.
-const share = num(textOf(C(m6), 14))
 const [fewGap, fewP] = nums(textOf(C(m6), 15))
 export const measurePValues: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(m6), show: [14, 15],
@@ -167,14 +144,6 @@ export const measurePValues: SceneModel = notebookFrame({
       ],
     },
     {
-      type: 'table', id: 'says', title: `p = ${p.toFixed(4)}`, tone: 'store', columns: ['says', 'does not say'], rows: [
-        ['luck rarely gives this gap', 'how big it is'],
-        ['the gap is probably real', 'what causes it'],
-        ['', 'whether it matters'],
-        { cells: ['size, measured apart:', `${(share * 100).toFixed(1)}% of the median`], tone: 'ingest' },
-      ],
-    },
-    {
       type: 'group', id: 'moves', title: 'what makes p small', icon: 'search', tone: 'ingest', children: [
         {
           type: 'group', id: 'mv-causes', bare: true, dir: 'row', children: [
@@ -183,11 +152,11 @@ export const measurePValues: SceneModel = notebookFrame({
           ],
         },
         { type: 'item', id: 'mv-p', title: 'a smaller p', sub: 'either one alone can do it', chip: true },
+        { type: 'item', id: 'mv-not', title: `p = ${p.toFixed(4)} is not "the chance garages do not matter"`, sub: 'it is how often shuffled data made a gap this big', icon: 'search', tone: 'consume' },
       ],
     },
-    { type: 'note', id: 'p-note', tone: 'consume', text: `With 40 sales, p is ${fewP.toFixed(2)}: no evidence. Not evidence of no effect: the garage effect is the same, the data was too small to see it.` },
   ],
-  edges: [{ from: 'mv-gap', to: 'mv-p' }, { from: 'mv-data', to: 'mv-p' }],
+  edges: [{ from: 'mv-gap', to: 'mv-p' }, { from: 'mv-data', to: 'mv-p' }, { from: 'mv-p', to: 'mv-not' }],
 })
 
 // §7.7 — correlation is not causation: built "matters" overall, and not at all within an area.
@@ -215,7 +184,6 @@ export const measureConfounder: SceneModel = notebookFrame({
         ...within.map(([a, r]) => ({ cells: [`inside ${a}`, r, builtByArea.find(([x]) => x === a)![1].replace('.0', '')] })),
       ],
     },
-    { type: 'note', id: 'conf-note', tone: 'store', text: 'Hold the confounder fixed and the link disappears. Compare like with like: same area, then ask about built.' },
   ],
   edges: [{ from: 'd-area', to: 'd-built' }, { from: 'd-area', to: 'd-price' }],
 })

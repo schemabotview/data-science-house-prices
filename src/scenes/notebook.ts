@@ -149,7 +149,7 @@ function dataframe(id: string, t: NonNullable<CellOutput['table']>, rows?: numbe
  * each has a tick label, else at their centres), lines, scatter points, the axes' limits and labels.
  * Nothing is re-derived: the numbers are the kernel's.
  */
-export function figurePlot(id: string, f: Figure, opts: { compact?: boolean; w?: number; xScale?: number; yScale?: number; tone?: Plot['tone'] } = {}): Plot {
+export function figurePlot(id: string, f: Figure, opts: { compact?: boolean; w?: number; xStep?: number; xScale?: number; yScale?: number; tone?: Plot['tone'] } = {}): Plot {
   const sx = opts.xScale ?? 1, sy = opts.yScale ?? 1
   const r = (v: number, s: number) => Math.round((v / s) * 1000) / 1000
   const labels = f.xticklabels.filter((t) => t)
@@ -166,7 +166,7 @@ export function figurePlot(id: string, f: Figure, opts: { compact?: boolean; w?:
   const unit = (label: string, s: number) => (s === 1000 ? (label ? `${label} (£k)` : '£k') : label) || undefined
   return {
     type: 'plot', id, title: f.title || undefined, compact: opts.compact, w: opts.w, tone: opts.tone,
-    x: categorical ? { labels, label: f.xlabel || undefined } : { min: r(f.xlim[0], sx), max: r(f.xlim[1], sx), label: unit(f.xlabel, sx) },
+    x: categorical ? { labels, label: f.xlabel || undefined } : { min: r(f.xlim[0], sx), max: r(f.xlim[1], sx), step: opts.xStep, label: unit(f.xlabel, sx) },
     y: { min: r(f.ylim[0], sy), max: r(f.ylim[1], sy), label: unit(f.ylabel, sy) },
     series,
   }

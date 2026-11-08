@@ -108,7 +108,12 @@ try {
       // unreadable word (shape-groupby's first build) while every text sat inside its SVG.
       for (const svg of document.querySelectorAll('.gf-plot svg')) {
         const boxes = [...svg.querySelectorAll('text')].filter((t) => t.textContent.trim()).map((t) => [t.textContent, t.getBoundingClientRect()])
-        const crash = boxes.find(([, a], i) => boxes.some(([, b], j) => j > i && a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1))
+        // Touching counts: two tick labels with no gap read as one number ("230235240…", frame v2's
+        // narrower side plots). Labels on one line need a 1-character gap (~9 natural px, at 4K × s).
+        const gap = 4 * s
+        const crash = boxes.find(([, a], i) => boxes.some(([, b], j) => j > i && (
+          (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) ||
+          (Math.abs(a.top - b.top) < 2 && a.left < b.right + gap && b.left < a.right + gap))))
         if (crash) out.push(`plot '${svg.closest('[data-id]').dataset.id}': text "${crash[0]}" overlaps other text`)
       }
       const BODY = '.gf-item-title, .gf-item-sub, .gf-bullets li, .gf-table td, .gf-line, .gf-tree-name, .gf-note, .gf-edge-label, .gf-cell-n'
