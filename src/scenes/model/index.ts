@@ -1,4 +1,5 @@
 import type { PlotSeries, SceneModel } from '@graphlearning/graphl-flow'
+import { SIDE_PLOT_W } from '../grid'
 import { figurePlot, notebookFrame, num, outputOf, seriesOf, textOf, type Cell } from '../notebook'
 import { tree } from '../tree'
 import g1 from '../../../spine/model/01-baseline/cells.json'
@@ -10,8 +11,6 @@ import g6 from '../../../spine/model/06-tree/cells.json'
 import g7 from '../../../spine/model/07-boosting/cells.json'
 import g8 from '../../../spine/model/08-overfitting/cells.json'
 import generator from '../../../scripts/generate_data.py?raw'
-import v1 from '../../../spine/see/01-distributions/cells.json'
-import f2 from '../../../spine/features/02-split/cells.json'
 
 // Course 9 — predict prices, in notebooks/model.ipynb. Every score is the kernel's (cells.json). §9.4
 // is the reveal: the generator's hidden rule (scripts/generate_data.py, read here, never retyped)
@@ -31,8 +30,9 @@ export const modelBaseline: SceneModel = notebookFrame({
   side: [
     {
       type: 'group', id: 'mae', title: 'mean absolute error (MAE)', icon: 'search', tone: 'ingest', children: [
-        { type: 'item', id: 'mae-1', title: 'for each test house: |actual − predicted|', sub: 'how far off, in pounds', chip: true },
-        { type: 'item', id: 'mae-2', title: 'average them', sub: 'the typical miss', chip: true },
+        { type: 'item', id: 'mae-1', title: 'for each test house: |actual − predicted|', sub: 'how far off, in pounds', icon: 'search' },
+        { type: 'item', id: 'mae-2', title: 'average them', sub: 'the typical miss', icon: 'chart' },
+        { type: 'item', id: 'mae-3', title: `the number to beat: ${gbp(baseline)}`, sub: 'a model that cannot, has learned nothing about houses', icon: 'check', tone: 'store' },
       ],
     },
     {
@@ -41,14 +41,8 @@ export const modelBaseline: SceneModel = notebookFrame({
         { cells: ['MAE on the test set', gbp(baseline)], tone: 'consume' },
       ],
     },
-    (() => {
-      const h = figurePlot('guess', fig(C(v1), 2), { compact: true, xScale: 1000, tone: 'ingest' })
-      const g = nums(textOf(C(f2), 5))[0] / 1000
-      return { ...h, title: 'every price (£k), and the one guess', series: [...h.series, { kind: 'segment' as const, from: [g, 0] as [number, number], to: [g, h.y.max!] as [number, number], label: 'the guess', tone: 'consume' as const, dashed: false }] }
-    })(),
-    { type: 'note', id: 'base-note', tone: 'store', text: 'Every model from here must beat this number, or it has learned nothing about houses.' },
   ],
-  edges: [{ from: 'mae-1', to: 'mae-2' }],
+  edges: [{ from: 'mae-1', to: 'mae-2' }, { from: 'mae-2', to: 'mae-3' }],
 })
 
 // §9.2 — a straight line on size.
@@ -56,15 +50,13 @@ const [intercept, slope, lineMae] = nums(textOf(C(g2), 15))
 export const modelLine: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(g2), show: [15],
   side: [
-    { type: 'item', id: 'eq', title: `price ≈ ${gbp(intercept)} + ${gbp(slope).replace('.', '.')} × sqft`, sub: `£${slope} for every extra square foot`, icon: 'chart' },
     {
       type: 'table', id: 'vs', title: 'MAE on the test set', tone: 'store', columns: ['model', 'MAE'], rows: [
         { cells: ['median guess', gbp(baseline)], tone: 'consume' },
         { cells: ['line on sqft', gbp(lineMae)], tone: 'store' },
       ],
     },
-    figurePlot('line-fig', fig(C(g2), 16), { compact: true, yScale: 1000 }),
-    { type: 'note', id: 'line-note', tone: 'ingest', text: 'fit() chose the intercept and slope; predict() reads the line. Size alone halves the error.' },
+    { ...figurePlot('line-fig', fig(C(g2), 16), { compact: true, w: SIDE_PLOT_W, yScale: 1000 }), title: `price ≈ ${gbp(intercept)} + £${slope} × sqft` },
   ],
 })
 
@@ -123,7 +115,13 @@ export const modelMany: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(g4), show: [19, 20],
   side: [
     {
-      type: 'table', id: 'reveal', title: 'what the model found, and the rule the data was made with', tone: 'store', columns: ['feature', 'model', `rule × ${mid.toFixed(2)}`],
+      type: 'group', id: 'unused', title: 'two columns the rule never used', icon: 'search', tone: 'ingest', dir: 'row', children: [
+        { type: 'item', id: 'u-built', title: `built: ${gbp(coef.get('built')!)}`, sub: 'near 0: the area was talking (§7.7)', stack: true },
+        { type: 'item', id: 'u-beds', title: `beds: ${gbp(coef.get('beds')!)}`, sub: 'near 0: size already said it (§6.5)', stack: true },
+      ],
+    },
+    {
+      type: 'table', id: 'reveal', title: `what the model found (MAE ${gbp(linearMae)}), and the rule the data was made with`, tone: 'store', columns: ['feature', 'model', `rule × ${mid.toFixed(2)}`],
       rows: [
         ruleRow('sqft', rule.sqft),
         ruleRow('garage', rule.garage),
@@ -133,14 +131,6 @@ export const modelMany: SceneModel = notebookFrame({
         ...['Riverside', 'Old Town', 'Northgate', 'Hillcrest'].map((a) => ruleRow(a, rule.premium[a] - rule.premium.Eastfield)),
       ],
     },
-    {
-      type: 'table', id: 'rule-src', title: 'scripts/generate_data.py: the hidden rule', tone: 'ingest', columns: ['in the rule', ''], rows: [
-        ['£ per sq ft (Jan 2021)', String(rule.sqft)],
-        ['per garage space', gbp(rule.garage)],
-        ['market', `× ${rule.monthly} a month`],
-      ],
-    },
-    { type: 'note', id: 'reveal-note', tone: 'store', text: `MAE ${gbp(linearMae)}. built and beds come out near 0: the rule never used them. The model found that from the sales alone.` },
   ],
 })
 
@@ -151,29 +141,16 @@ export const modelLog: SceneModel = notebookFrame({
   tree: tree(files), file: FILE, cells: C(g5), show: [21, 22],
   side: [
     {
-      type: 'table', id: 'miss', title: 'typical miss, as a share of the price', tone: 'ingest', columns: ['model', 'median miss'], rows: [
-        { cells: ['linear on price', `${(missLinear * 100).toFixed(1)}%`], tone: 'store' },
-        { cells: ['linear on log(price)', `${(missLog * 100).toFixed(1)}%`], tone: 'consume' },
-      ],
-    },
-    {
-      type: 'table', id: 'ttr', title: 'TransformedTargetRegressor', tone: 'ingest', columns: ['step', 'does'], rows: [
-        ['fit', 'learns log(price) from X'],
-        ['predict', 'exp() of its answer: back to £'],
-      ],
-    },
-    {
-      type: 'group', id: 'loop', title: 'an idea is a hypothesis', icon: 'workflow', tone: 'ingest', dir: 'row', children: [
-        { type: 'item', id: 'lp-1', title: 'idea', sub: 'prices are skewed', chip: true },
-        { type: 'item', id: 'lp-2', title: 'measure', sub: 'on the test set', chip: true },
-        { type: 'item', id: 'lp-3', title: 'keep or drop', sub: 'here: drop', chip: true },
+      type: 'group', id: 'loop', title: 'an idea is a hypothesis', icon: 'workflow', tone: 'ingest', children: [
+        { type: 'item', id: 'lp-1', title: 'an idea', sub: 'prices are skewed: fit on log(price)', icon: 'brain' },
+        { type: 'item', id: 'lp-2', title: 'measure it, on the test set', sub: `typical miss: linear ${(missLinear * 100).toFixed(1)}%, log ${(missLog * 100).toFixed(1)}%`, icon: 'search' },
+        { type: 'item', id: 'lp-3', title: 'keep or drop, and say which', sub: 'here: drop it', icon: 'check', tone: 'consume' },
       ],
     },
     {
       type: 'table', id: 'thirds', title: 'median miss by price third (cell 22)', tone: 'ingest', columns: ['test houses', 'linear', 'log'],
       rows: thirds.rows.map((r) => ({ cells: [r[0], gbp(Number(r[1])), gbp(Number(r[2]))], tone: Number(r[2]) < Number(r[1]) ? 'store' as const : undefined })),
     },
-    { type: 'note', id: 'log-note', tone: 'consume', text: `The log model only wins on the cheapest third (${thirds.rows[0][2]} vs ${thirds.rows[0][1]}). These prices are built additively, so a straight line in pounds fits them better.` },
   ],
   edges: [{ from: 'lp-1', to: 'lp-2' }, { from: 'lp-2', to: 'lp-3' }],
 })
@@ -200,7 +177,6 @@ export const modelTree: SceneModel = notebookFrame({
       type: 'table', id: 'leaves', title: `${leaves.length} leaves: the only ${leaves.length} prices it can say (MAE ${gbp(treeMae)})`, tone: 'store', columns: ['leaf', 'price', ''],
       rows: leaves.map((v, i) => [String(i + 1), gbp(v), '█'.repeat(Math.round(v / 40000))]),
     },
-    { type: 'note', id: 'tree-note', tone: 'ingest', text: 'Size first, then Riverside: the tree found the two biggest effects on its own. But depth 3 means only 8 prices, so it misses more than the line.' },
   ],
   edges: [{ from: 'q-root', to: 'q-yes' }, { from: 'q-root', to: 'q-no' }],
 })
@@ -222,7 +198,6 @@ export const modelBoosting: SceneModel = notebookFrame({
         { type: 'item', id: 'bo-3', title: '…a hundred times', chip: true },
       ],
     },
-    { type: 'note', id: 'board-note', tone: 'store', text: 'The plain linear model wins here. Boosting is powerful; it is not magic. When the truth is close to a straight line, a line is hard to beat.' },
   ],
   edges: [{ from: 'bo-1', to: 'bo-2' }, { from: 'bo-2', to: 'bo-3' }],
 })
@@ -238,14 +213,7 @@ export const modelOverfitting: SceneModel = notebookFrame({
       type: 'table', id: 'depths', title: 'MAE by depth', tone: 'ingest', columns: ['depth', 'train', 'test'],
       rows: depthRows.rows.map((r) => ({ cells: [r[0], gbp(Number(r[1])), gbp(Number(r[2]))], tone: r === bestDepth ? 'store' as const : r === deepest ? 'consume' as const : undefined })),
     },
-    figurePlot('curves', fig(C(g8), 27), { compact: true, yScale: 1000 }),
-    {
-      type: 'table', id: 'zones', title: 'reading the two curves', tone: 'store', columns: ['depth', 'the tree'], rows: [
-        [`1–${depthRows.rows[1][0]}`, 'too simple: misses on both'],
-        [`about ${bestDepth[0]}`, 'best on unseen houses'],
-        [deepest[0], `memorised: ${gbp(Number(deepest[1]))} off on train`],
-      ],
-    },
+    figurePlot('curves', fig(C(g8), 27), { compact: true, w: SIDE_PLOT_W, yScale: 1000 }),
   ],
 })
 
